@@ -4,7 +4,7 @@
 
 - **URL:** `https://hirgguemwflwruqsvenv.supabase.co`
 - **Anon Key:** `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhpcmdndWVtd2Zsd3J1cXN2ZW52Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxNjU0NjIsImV4cCI6MjA3ODc0MTQ2Mn0.tTBUWSKXdW2WNbKUAWQXVV4HO-6fHqH4lLPCWB3jCb0`
-- **Service Role:** `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhpcmdndWVtd2Zsd3J1cXN2ZW52Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MzE2NTQ2MiwiZXhwIjoyMDc4NzQxNDYyfQ.f1cUEFxR3W_-_PnP-rX3XSSH7Nu0JZhoCSwio_fkh6o`
+- **Service Role Key:** Get this from your Supabase Dashboard → Settings → API (keep it secret!)
 
 ---
 
