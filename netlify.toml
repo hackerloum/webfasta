@@ -1,0 +1,57 @@
+[build]
+  # Build command for Vite
+  command = "npm run build"
+  
+  # Output directory (Vite outputs to 'dist' by default)
+  publish = "dist"
+  
+  # Node version (use LTS version)
+  NODE_VERSION = "20"
+
+[build.environment]
+  # Enable Node.js to use the specified version
+  NODE_VERSION = "20"
+
+# Redirect rules for React Router (SPA)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Headers for security and performance
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "geolocation=(), microphone=(), camera=()"
+
+# Cache static assets
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Cache images
+[[headers]]
+  for = "/*.jpg"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.png"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.svg"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.ico"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
