@@ -161,7 +161,8 @@ IMPORTANT:
                   ],
                   generationConfig: {
                     temperature: 0.7,
-                    maxOutputTokens: 4096,
+                    maxOutputTokens: 16384, // Increased to handle thinking tokens + actual output
+                    responseModalities: ["TEXT"], // Ensure text output
                   },
                 }),
               }
@@ -261,16 +262,35 @@ IMPORTANT:
         }
         
         // Check for blocked content
-        if (geminiData.candidates?.[0]?.finishReason === "SAFETY") {
+        const finishReason = geminiData.candidates?.[0]?.finishReason;
+        
+        if (finishReason === "SAFETY") {
           throw new Error("Response blocked for safety reasons. Please try a different prompt.");
         }
         
-        if (geminiData.candidates?.[0]?.finishReason === "RECITATION") {
+        if (finishReason === "RECITATION") {
           throw new Error("Response blocked for recitation. Please try a different prompt.");
+        }
+        
+        if (finishReason === "MAX_TOKENS") {
+          // Response was truncated - try to get partial content or inform user
+          if (!geminiText || geminiText.trim().length === 0) {
+            throw new Error("Response was truncated due to token limit. The prompt may be too complex. Please try breaking it into smaller requests or simplify your request.");
+          }
+          // If we have partial text, continue but warn user
+          console.warn("Gemini response was truncated (MAX_TOKENS). Partial response will be used.");
         }
 
         if (!geminiText || geminiText.trim().length === 0) {
           console.error("Empty Gemini response:", geminiData);
+          console.error("Finish reason:", finishReason);
+          console.error("Usage metadata:", geminiData.usageMetadata);
+          
+          // Provide helpful error message based on finish reason
+          if (finishReason === "MAX_TOKENS") {
+            throw new Error("Response exceeded token limit. The prompt or response was too long. Please try a simpler request or break it into smaller parts.");
+          }
+          
           throw new Error("No text content in Gemini API response. Please check the API response structure or try again.");
         }
 
