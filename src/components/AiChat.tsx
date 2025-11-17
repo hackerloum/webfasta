@@ -132,21 +132,15 @@ IMPORTANT:
         }
         fullContext += `\n\nUser request: ${fullPrompt}`;
 
-        // Retry logic for 503/temporary errors
+        // Retry logic for 503/temporary errors - always use gemini-2.5-flash
         const maxRetries = 3;
+        const modelToUse = "gemini-2.5-flash"; // Always use gemini-2.5-flash as per official guide
         let lastError: Error | null = null;
         let apiResponse: Response | null = null;
 
         for (let attempt = 0; attempt < maxRetries; attempt++) {
           try {
-            // Use official REST API format - try gemini-2.5-flash first, fallback to other models
-            const models = [
-              "gemini-2.5-flash",
-              "gemini-1.5-flash",
-              "gemini-1.5-pro",
-            ];
-            const modelToUse = models[attempt] || models[0];
-
+            // Use official REST API format with gemini-2.5-flash model
             apiResponse = await fetch(
               `https://generativelanguage.googleapis.com/v1beta/models/${modelToUse}:generateContent`,
               {
@@ -178,7 +172,7 @@ IMPORTANT:
               break;
             }
 
-            // If 503 or 429, retry after delay
+            // If 503 or 429, retry with same model after delay
             if (apiResponse.status === 503 || apiResponse.status === 429) {
               const errorText = await apiResponse.text();
               let errorMessage = "Gemini API temporarily unavailable";
@@ -194,7 +188,7 @@ IMPORTANT:
               // Wait before retrying (exponential backoff)
               if (attempt < maxRetries - 1) {
                 const delayMs = Math.min(1000 * Math.pow(2, attempt), 5000);
-                console.log(`Gemini API unavailable, retrying in ${delayMs}ms (attempt ${attempt + 1}/${maxRetries})...`);
+                console.log(`Gemini API temporarily unavailable, retrying ${modelToUse} in ${delayMs}ms (attempt ${attempt + 1}/${maxRetries})...`);
                 await new Promise(resolve => setTimeout(resolve, delayMs));
                 continue;
               }
@@ -212,15 +206,16 @@ IMPORTANT:
             }
           } catch (error: any) {
             lastError = error;
-            // If it's not a retryable error, throw immediately
-            if (apiResponse && apiResponse.status !== 503 && apiResponse.status !== 429) {
+            // If it's a network error or retryable HTTP error, continue to next retry
+            if (!apiResponse || apiResponse.status === 503 || apiResponse.status === 429) {
+              if (attempt < maxRetries - 1) {
+                const delayMs = Math.min(1000 * Math.pow(2, attempt), 5000);
+                await new Promise(resolve => setTimeout(resolve, delayMs));
+                continue;
+              }
+            } else {
+              // For other errors, throw immediately
               throw error;
-            }
-            // Otherwise, continue to next retry
-            if (attempt < maxRetries - 1) {
-              const delayMs = Math.min(1000 * Math.pow(2, attempt), 5000);
-              await new Promise(resolve => setTimeout(resolve, delayMs));
-              continue;
             }
           }
         }
