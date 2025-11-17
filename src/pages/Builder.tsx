@@ -3,7 +3,7 @@ import CodeEditor from "@/components/CodeEditor";
 import PreviewPanel from "@/components/PreviewPanel";
 import AiChat from "@/components/AiChat";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
-import { Code2, Eye, Code, Home, Download, CheckCircle2, Sparkles, Layers, Menu } from "lucide-react";
+import { Code2, Eye, Code, Home, Download, CheckCircle2, Sparkles, Layers, Menu, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
