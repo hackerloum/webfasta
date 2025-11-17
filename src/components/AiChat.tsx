@@ -161,8 +161,7 @@ IMPORTANT:
                   ],
                   generationConfig: {
                     temperature: 0.7,
-                    maxOutputTokens: 16384, // Increased to handle thinking tokens + actual output
-                    responseModalities: ["TEXT"], // Ensure text output
+                    // Use default maxOutputTokens - let API decide optimal token allocation
                   },
                 }),
               }
