@@ -225,11 +225,53 @@ IMPORTANT:
           throw lastError || new Error("Gemini API request failed after retries");
         }
 
-        const geminiData = await apiResponse.json();
-        const geminiText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || "";
+        // Parse response with error handling
+        let geminiData: any;
+        try {
+          const responseText = await apiResponse.text();
+          console.log("Gemini API raw response:", responseText.substring(0, 500)); // Log first 500 chars for debugging
+          
+          if (!responseText || responseText.trim().length === 0) {
+            throw new Error("Empty response from Gemini API");
+          }
+          
+          geminiData = JSON.parse(responseText);
+        } catch (parseError: any) {
+          console.error("Error parsing Gemini API response:", parseError);
+          throw new Error(`Failed to parse Gemini API response: ${parseError.message}`);
+        }
+        
+        // Log the full response for debugging
+        console.log("Gemini API parsed response:", geminiData);
+        
+        // Handle different response structures
+        let geminiText = "";
+        
+        // Check for candidates array (standard response)
+        if (geminiData.candidates && geminiData.candidates.length > 0) {
+          const candidate = geminiData.candidates[0];
+          if (candidate.content && candidate.content.parts && candidate.content.parts.length > 0) {
+            geminiText = candidate.content.parts[0].text || "";
+          }
+        }
+        
+        // Check for error in response
+        if (geminiData.error) {
+          throw new Error(geminiData.error.message || `Gemini API error: ${JSON.stringify(geminiData.error)}`);
+        }
+        
+        // Check for blocked content
+        if (geminiData.candidates?.[0]?.finishReason === "SAFETY") {
+          throw new Error("Response blocked for safety reasons. Please try a different prompt.");
+        }
+        
+        if (geminiData.candidates?.[0]?.finishReason === "RECITATION") {
+          throw new Error("Response blocked for recitation. Please try a different prompt.");
+        }
 
-        if (!geminiText) {
-          throw new Error("No response from Gemini API. The model may be temporarily unavailable.");
+        if (!geminiText || geminiText.trim().length === 0) {
+          console.error("Empty Gemini response:", geminiData);
+          throw new Error("No text content in Gemini API response. Please check the API response structure or try again.");
         }
 
         // Parse JSON from response
