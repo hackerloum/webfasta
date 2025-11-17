@@ -27,6 +27,7 @@ interface AiChatProps {
 }
 
 const AiChat = ({ onCodeGenerated, onGeneratingStart, onGeneratingEnd }: AiChatProps) => {
+  // Initialize messages as empty - don't persist across page reloads
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -38,6 +39,11 @@ const AiChat = ({ onCodeGenerated, onGeneratingStart, onGeneratingEnd }: AiChatP
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { user, userProfile } = useAuth();
+
+  // Clear localStorage messages on component mount (page refresh/restart)
+  useEffect(() => {
+    localStorage.removeItem("ai-chat-messages");
+  }, []);
 
   // Save model preference to localStorage
   useEffect(() => {

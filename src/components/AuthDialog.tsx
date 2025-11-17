@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +23,7 @@ const AuthDialog = ({ open, onOpenChange, mode, onModeChange }: AuthDialogProps)
   const [isLoading, setIsLoading] = useState(false);
   const { signIn, signUp } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,12 +41,17 @@ const AuthDialog = ({ open, onOpenChange, mode, onModeChange }: AuthDialogProps)
         } else {
           toast({
             title: "Welcome back!",
-            description: "You've successfully signed in.",
+            description: "Redirecting to your dashboard...",
           });
           onOpenChange(false);
           setEmail("");
           setPassword("");
           setFullName("");
+          
+          // Redirect to dashboard after successful sign in
+          setTimeout(() => {
+            navigate("/dashboard");
+          }, 500);
         }
       } else {
         if (password.length < 6) {
@@ -75,8 +82,8 @@ const AuthDialog = ({ open, onOpenChange, mode, onModeChange }: AuthDialogProps)
           
           // Redirect to dashboard after a brief delay
           setTimeout(() => {
-            window.location.href = "/dashboard";
-          }, 1000);
+            navigate("/dashboard");
+          }, 500);
         }
       }
     } catch (error: any) {

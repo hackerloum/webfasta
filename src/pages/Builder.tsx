@@ -49,6 +49,7 @@ const Builder = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [mobileView, setMobileView] = useState<"chat" | "preview">("chat");
 
   // Simulate auto-save effect
   useEffect(() => {
@@ -63,6 +64,11 @@ const Builder = () => {
     // Start streaming animation
     setIsStreaming(true);
     setIsGenerating(true);
+    
+    // Switch to preview view on mobile when code is being generated
+    if (isMobileOrTablet) {
+      setMobileView("preview");
+    }
     
     const newFiles: CodeFile[] = [];
     
@@ -110,6 +116,10 @@ const Builder = () => {
 
   const handleGeneratingStart = () => {
     setIsGenerating(true);
+    // Switch to preview view on mobile when generation starts
+    if (isMobileOrTablet) {
+      setMobileView("preview");
+    }
   };
 
   const handleGeneratingEnd = () => {
@@ -181,6 +191,28 @@ const Builder = () => {
 
           {/* View Mode Toggle - Enhanced */}
           <div className="flex items-center gap-3">
+            {/* Mobile/Tablet View Toggle Button */}
+            {isMobileOrTablet && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setMobileView(mobileView === "chat" ? "preview" : "chat")}
+                className="gap-2 hover:bg-muted transition-all h-8"
+              >
+                {mobileView === "chat" ? (
+                  <>
+                    <Eye className="w-4 h-4" />
+                    <span className="hidden sm:inline text-xs font-semibold">Preview</span>
+                  </>
+                ) : (
+                  <>
+                    <MessageSquare className="w-4 h-4" />
+                    <span className="hidden sm:inline text-xs font-semibold">Chat</span>
+                  </>
+                )}
+              </Button>
+            )}
+            
             {/* Mobile/Tablet Menu Button */}
             {isMobileOrTablet && (
               <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
@@ -409,36 +441,46 @@ const Builder = () => {
       {/* Main Content with enhanced spacing */}
       <div className="flex-1 overflow-hidden">
         {isMobileOrTablet ? (
-          /* Mobile/Tablet Layout: Only AI Chat and Preview */
-          <div className="h-full flex flex-col">
-            <ResizablePanelGroup direction="vertical" className="h-full">
-              {/* Top Panel - AI Chat */}
-              <ResizablePanel defaultSize={40} minSize={30} maxSize={60} className="relative">
-                <div className="h-full p-3 bg-background">
-                  <div className="h-full rounded-xl overflow-hidden">
-                    <AiChat 
-                      onCodeGenerated={handleCodeGenerated}
-                      onGeneratingStart={handleGeneratingStart}
-                      onGeneratingEnd={handleGeneratingEnd}
-                    />
-                  </div>
+          /* Mobile/Tablet Layout: Switch between Chat and Preview */
+          <div className="h-full flex flex-col relative">
+            {/* AI Chat View */}
+            <div
+              className={cn(
+                "absolute inset-0 transition-all duration-300 ease-in-out",
+                mobileView === "chat" 
+                  ? "opacity-100 translate-x-0 z-10" 
+                  : "opacity-0 -translate-x-full pointer-events-none z-0"
+              )}
+            >
+              <div className="h-full p-3 bg-background">
+                <div className="h-full rounded-xl overflow-hidden">
+                  <AiChat 
+                    onCodeGenerated={handleCodeGenerated}
+                    onGeneratingStart={handleGeneratingStart}
+                    onGeneratingEnd={handleGeneratingEnd}
+                  />
                 </div>
-              </ResizablePanel>
+              </div>
+            </div>
 
-              <ResizableHandle withHandle className="hover:bg-primary/20 transition-colors" />
-
-              {/* Bottom Panel - Preview */}
-              <ResizablePanel defaultSize={60} minSize={40} className="relative">
-                <div className="h-full p-3 bg-background">
-                  <div className="h-full rounded-xl overflow-hidden">
-                    <PreviewPanel 
-                      htmlContent={getPreviewContent()}
-                      isGenerating={isGenerating}
-                    />
-                  </div>
+            {/* Preview View */}
+            <div
+              className={cn(
+                "absolute inset-0 transition-all duration-300 ease-in-out",
+                mobileView === "preview" 
+                  ? "opacity-100 translate-x-0 z-10" 
+                  : "opacity-0 translate-x-full pointer-events-none z-0"
+              )}
+            >
+              <div className="h-full p-3 bg-background">
+                <div className="h-full rounded-xl overflow-hidden">
+                  <PreviewPanel 
+                    htmlContent={getPreviewContent()}
+                    isGenerating={isGenerating}
+                  />
                 </div>
-              </ResizablePanel>
-            </ResizablePanelGroup>
+              </div>
+            </div>
           </div>
         ) : (
           /* Desktop Layout: Full layout with all panels */
