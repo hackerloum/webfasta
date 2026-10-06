@@ -1,8 +1,8 @@
 import {
   doc,
   getDoc,
+  runTransaction,
   serverTimestamp,
-  setDoc,
   updateDoc,
   type Timestamp,
 } from "firebase/firestore";
@@ -59,18 +59,20 @@ export async function createUserProfile(input: {
   fullName?: string | null;
 }): Promise<UserProfile> {
   const ref = doc(db, "users", input.id);
-  const existing = await getDoc(ref);
-  if (existing.exists()) {
-    return toProfile(existing.id, existing.data());
-  }
+  const email = input.email.trim().toLowerCase();
 
-  await setDoc(ref, {
-    email: input.email,
-    fullName: input.fullName ?? null,
-    subscriptionPlan: "free",
-    preferences: {},
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
+  await runTransaction(db, async (tx) => {
+    const existing = await tx.get(ref);
+    if (existing.exists()) return;
+
+    tx.set(ref, {
+      email,
+      fullName: input.fullName ?? null,
+      subscriptionPlan: "free",
+      preferences: {},
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
   });
 
   const created = await getDoc(ref);

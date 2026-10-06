@@ -108,7 +108,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
       const profile = await createUserProfile({
         id: credential.user.uid,
-        email,
+        email: credential.user.email ?? email.trim().toLowerCase(),
         fullName: fullName ?? null,
       });
       applyProfile(profile);
