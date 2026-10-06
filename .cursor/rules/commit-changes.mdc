@@ -1,0 +1,14 @@
+---
+description: Commit project changes as soon as they are made
+alwaysApply: true
+---
+
+# Commit changes
+
+After any change to this project, commit it. Do not ask first.
+
+- Commit when the change is complete and checks that apply have been run.
+- Do not push unless asked.
+- Do not commit secrets (`.env`, credentials, service account keys).
+- Do not change git config, skip hooks, or force-push.
+- If a hook rejects the commit, fix the problem and make a new commit.
