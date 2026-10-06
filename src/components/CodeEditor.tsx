@@ -114,9 +114,9 @@ const CodeEditor = ({ files, activeFile, onFileChange, isStreaming = false }: Co
   const isCurrentlyStreaming = isStreaming && contentToShow.length < (currentFile?.content.length || 0);
 
   return (
-    <Card className="h-full bg-code-bg/50 backdrop-blur-sm border-code-border/50 flex flex-col overflow-hidden">
+    <Card className="h-full bg-card border-line flex flex-col overflow-hidden">
       {/* Tab Bar */}
-      <div className="relative border-b border-code-border/50 glass-morphism-light">
+      <div className="relative border-b border-line bg-paper">
         <Tabs value={activeFile} onValueChange={onFileChange} className="w-full">
           <div className="flex items-center justify-between">
             <ScrollArea className="flex-1">
@@ -234,7 +234,7 @@ const CodeEditor = ({ files, activeFile, onFileChange, isStreaming = false }: Co
       </ScrollArea>
 
       {/* Status Bar */}
-      <div className="border-t border-code-border/50 px-4 py-2 glass-morphism-light flex items-center justify-between text-xs text-muted-foreground">
+      <div className="border-t border-line bg-paper px-4 py-2 flex items-center justify-between text-xs text-muted-foreground">
         <div className="flex items-center gap-4">
           <span className="font-medium">
             {currentFile?.language.toUpperCase() || "TEXT"}
