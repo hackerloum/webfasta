@@ -23,7 +23,6 @@ import {
   Star,
   ChevronDown,
   Terminal,
-  Layout,
   Wand2
 } from "lucide-react";
 
@@ -245,32 +244,32 @@ const Landing = () => {
                     </div>
                   </div>
 
-                  {/* Real Image or Placeholder */}
-                  <img 
-                    src="/hero-preview.png" 
-                    alt="AI Website Builder Interface - Split screen showing AI chat, code editor, and live preview"
-                    className="w-full h-full object-cover object-top pt-10"
-                    onError={(e) => {
-                      // Fallback to beautiful gradient placeholder
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = "none";
-                      target.nextElementSibling?.classList.remove("hidden");
-                    }}
-                  />
-                  
-                  {/* Fallback gradient placeholder */}
-                  <div className="hidden w-full h-full bg-gradient-to-br from-card via-card/80 to-card flex items-center justify-center relative pt-10">
-                    <div className="absolute inset-0 bg-dots-pattern opacity-20" />
-                    <div className="relative z-10 text-center p-12">
-                      <div className="inline-flex items-center justify-center w-24 h-24 rounded-3xl bg-gradient-to-br from-primary to-accent mb-8 shadow-2xl shadow-primary/30 animate-float">
-                        <Layout className="w-12 h-12 text-primary-foreground" />
+                  <div className="absolute inset-0 pt-10 grid grid-cols-1 sm:grid-cols-[0.9fr_1.1fr_1fr] bg-[#0b1220]">
+                    <div className="hidden sm:flex flex-col border-r border-white/10 p-4 gap-3">
+                      <p className="text-[11px] uppercase tracking-wider text-primary/80">AI chat</p>
+                      <div className="rounded-xl bg-white/5 px-3 py-2 text-xs text-slate-300">
+                        Build a cafe site with a menu and booking form
                       </div>
-                      <p className="text-muted-foreground text-xl font-semibold mb-2">
-                        Professional Builder Interface
-                      </p>
-                      <p className="text-sm text-muted-foreground/70">
-                        AI Chat • Code Editor • Live Preview
-                  </p>
+                      <div className="rounded-xl bg-primary/15 px-3 py-2 text-xs text-slate-100">
+                        Done. Homepage, menu, and a working booking form are ready to preview.
+                      </div>
+                    </div>
+                    <div className="hidden sm:block border-r border-white/10 p-4 font-mono text-[11px] leading-5 text-slate-300">
+                      <p className="text-slate-500 mb-2">index.html</p>
+                      <p><span className="text-pink-300">&lt;section</span> class=<span className="text-amber-200">"hero"</span><span className="text-pink-300">&gt;</span></p>
+                      <p className="pl-3"><span className="text-pink-300">&lt;h1&gt;</span>Karibu cafe<span className="text-pink-300">&lt;/h1&gt;</span></p>
+                      <p className="pl-3"><span className="text-pink-300">&lt;a</span> href=<span className="text-amber-200">"#book"</span><span className="text-pink-300">&gt;</span>Book a table<span className="text-pink-300">&lt;/a&gt;</span></p>
+                      <p><span className="text-pink-300">&lt;/section&gt;</span></p>
+                    </div>
+                    <div className="flex flex-col p-4 sm:p-5 bg-gradient-to-br from-slate-900 to-slate-800">
+                      <p className="text-[11px] uppercase tracking-wider text-accent mb-3">Live preview</p>
+                      <div className="flex-1 rounded-xl bg-white text-slate-900 p-4 shadow-lg">
+                        <p className="text-[10px] uppercase tracking-widest text-sky-600">Dar Cafe</p>
+                        <p className="text-lg font-black leading-tight mt-1">Coffee, cake, and a table by the window.</p>
+                        <div className="mt-3 inline-flex rounded-full bg-slate-900 px-3 py-1 text-[11px] font-semibold text-white">
+                          Book a table
+                        </div>
+                      </div>
                     </div>
                   </div>
 

@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Send, Sparkles, Wand2, Lightbulb, Bot, Zap } from "lucide-react";
+import { Loader2, Send, Sparkles, Wand2, Lightbulb, Bot, Zap, Cpu } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
@@ -26,15 +26,77 @@ interface AiChatProps {
   onGeneratingEnd?: () => void;
 }
 
+type AiModel = "openai" | "claude" | "gemini";
+
+interface GeneratedResponse {
+  response?: string;
+  code?: { html: string; css: string; js: string };
+}
+
+interface GeminiResponse {
+  candidates?: Array<{
+    content?: { parts?: Array<{ text?: string }> };
+    finishReason?: string;
+  }>;
+  error?: { message?: string };
+  usageMetadata?: unknown;
+}
+
+function asError(error: unknown): Error {
+  return error instanceof Error ? error : new Error(String(error));
+}
+
+const WEBSITE_SYSTEM_PROMPT = `You are an expert web developer AI that generates complete, production-ready HTML, CSS, and JavaScript code.
+
+When the user asks you to create a website:
+1. Generate COMPLETE, WORKING code - not pseudocode or examples
+2. Always include <!DOCTYPE html>, proper HTML structure with <head> and <body>
+3. Embed CSS inside <style> tags in the HTML
+4. Embed JavaScript inside <script> tags in the HTML
+5. Make the design beautiful, modern, and fully functional
+6. Use semantic HTML5 elements
+7. Make it responsive with mobile-first approach
+8. Add smooth animations and transitions
+9. Include all necessary meta tags
+
+Return your response in this EXACT JSON format:
+{
+  "response": "Brief explanation of what you created",
+  "code": {
+    "html": "complete HTML code with embedded CSS and JS",
+    "css": "",
+    "js": ""
+  }
+}
+
+IMPORTANT: 
+- The html field should contain a COMPLETE, WORKING website that can be rendered directly in a browser.`;
+
+function parseModelJson(text: string) {
+  try {
+    const jsonMatch = text.match(/```json\s*([\s\S]*?)\s*```/) || text.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      const jsonStr = jsonMatch[1] || jsonMatch[0];
+      return JSON.parse(jsonStr);
+    }
+  } catch {
+    // Fall through to a plain-text response.
+  }
+
+  return {
+    response: text,
+    code: { html: "", css: "", js: "" },
+  };
+}
+
 const AiChat = ({ onCodeGenerated, onGeneratingStart, onGeneratingEnd }: AiChatProps) => {
   // Initialize messages as empty - don't persist across page reloads
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedModel, setSelectedModel] = useState<"claude" | "gemini">(() => {
-    // Load from localStorage or default to claude
+  const [selectedModel, setSelectedModel] = useState<AiModel>(() => {
     const saved = localStorage.getItem("ai-model-preference");
-    return (saved === "claude" || saved === "gemini") ? saved : "claude";
+    return saved === "claude" || saved === "gemini" || saved === "openai" ? saved : "openai";
   });
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
@@ -84,7 +146,7 @@ const AiChat = ({ onCodeGenerated, onGeneratingStart, onGeneratingEnd }: AiChatP
       console.log("Messages count:", messages.length);
       console.log("Selected model:", selectedModel);
 
-      let response: any;
+      let response: GeneratedResponse | null = null;
 
       if (selectedModel === "gemini") {
         // Call Gemini API directly using official REST API
@@ -204,8 +266,8 @@ IMPORTANT:
               }
               throw new Error(errorMessage);
             }
-          } catch (error: any) {
-            lastError = error;
+          } catch (error: unknown) {
+            lastError = asError(error);
             // If it's a network error or retryable HTTP error, continue to next retry
             if (!apiResponse || apiResponse.status === 503 || apiResponse.status === 429) {
               if (attempt < maxRetries - 1) {
@@ -226,7 +288,7 @@ IMPORTANT:
         }
 
         // Parse response with error handling
-        let geminiData: any;
+        let geminiData: GeminiResponse;
         try {
           const responseText = await apiResponse.text();
           console.log("Gemini API raw response:", responseText.substring(0, 500)); // Log first 500 chars for debugging
@@ -235,10 +297,10 @@ IMPORTANT:
             throw new Error("Empty response from Gemini API");
           }
           
-          geminiData = JSON.parse(responseText);
-        } catch (parseError: any) {
+          geminiData = JSON.parse(responseText) as GeminiResponse;
+        } catch (parseError: unknown) {
           console.error("Error parsing Gemini API response:", parseError);
-          throw new Error(`Failed to parse Gemini API response: ${parseError.message}`);
+          throw new Error(`Failed to parse Gemini API response: ${asError(parseError).message}`);
         }
         
         // Log the full response for debugging
@@ -316,6 +378,99 @@ IMPORTANT:
         }
 
         response = parsedResponse;
+      } else if (selectedModel === "openai") {
+        const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY || "";
+
+        if (!OPENAI_API_KEY) {
+          throw new Error("OpenAI API key is not configured. Please set VITE_OPENAI_API_KEY in your .env file.");
+        }
+
+        const openaiMessages = [
+          { role: "system" as const, content: WEBSITE_SYSTEM_PROMPT },
+          ...messages.map((msg) => ({
+            role: msg.role === "assistant" ? ("assistant" as const) : ("user" as const),
+            content: msg.content,
+          })),
+          { role: "user" as const, content: promptText },
+        ];
+
+        const maxRetries = 3;
+        let lastError: Error | null = null;
+        let apiResponse: Response | null = null;
+
+        for (let attempt = 0; attempt < maxRetries; attempt++) {
+          try {
+            apiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${OPENAI_API_KEY}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                model: "gpt-6.1-sol",
+                messages: openaiMessages,
+                response_format: { type: "json_object" },
+                max_completion_tokens: 32000,
+              }),
+            });
+
+            if (apiResponse.ok) {
+              break;
+            }
+
+            if (apiResponse.status === 429 || apiResponse.status === 503) {
+              const errorText = await apiResponse.text();
+              let errorMessage = "OpenAI API temporarily unavailable";
+              try {
+                const errorJson = JSON.parse(errorText);
+                errorMessage = errorJson.error?.message || errorMessage;
+              } catch {
+                // Use the default error message.
+              }
+
+              lastError = new Error(errorMessage);
+
+              if (attempt < maxRetries - 1) {
+                const delayMs = Math.min(1000 * Math.pow(2, attempt), 5000);
+                await new Promise((resolve) => setTimeout(resolve, delayMs));
+                continue;
+              }
+            } else {
+              const errorText = await apiResponse.text();
+              let errorMessage = "OpenAI API error";
+              try {
+                const errorJson = JSON.parse(errorText);
+                errorMessage = errorJson.error?.message || errorText;
+              } catch {
+                errorMessage = errorText;
+              }
+              throw new Error(errorMessage);
+            }
+          } catch (error: unknown) {
+            lastError = asError(error);
+            if (apiResponse && apiResponse.status !== 429 && apiResponse.status !== 503) {
+              throw error;
+            }
+            if (attempt < maxRetries - 1) {
+              const delayMs = Math.min(1000 * Math.pow(2, attempt), 5000);
+              await new Promise((resolve) => setTimeout(resolve, delayMs));
+              continue;
+            }
+          }
+        }
+
+        if (!apiResponse || !apiResponse.ok) {
+          throw lastError || new Error("OpenAI API request failed after retries");
+        }
+
+        const openaiData = await apiResponse.json();
+        const aiResponse = openaiData.choices?.[0]?.message?.content || "";
+
+        if (!aiResponse) {
+          throw new Error("No response from OpenAI API");
+        }
+
+        response = parseModelJson(aiResponse);
       } else {
         // Call Claude API directly
         const CLAUDE_API_KEY = import.meta.env.VITE_CLAUDE_API_KEY || "";
@@ -418,8 +573,8 @@ IMPORTANT:
               }
               throw new Error(errorMessage);
             }
-          } catch (error: any) {
-            lastError = error;
+          } catch (error: unknown) {
+            lastError = asError(error);
             // If it's not a retryable error, throw immediately
             if (apiResponse && apiResponse.status !== 429 && apiResponse.status !== 503) {
               throw error;
@@ -472,19 +627,19 @@ IMPORTANT:
 
       const assistantMessage: Message = {
         role: "assistant",
-        content: response.response || response.code?.html || "Code generated successfully!",
+        content: response?.response || response?.code?.html || "Code generated successfully!",
       };
       setMessages((prev) => [...prev, assistantMessage]);
 
-      if (response.code) {
+      if (response?.code) {
         onCodeGenerated(response.code);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error:", error);
       
       toast({
         title: "Error",
-        description: error?.message || "Failed to generate code. Please try again.",
+        description: asError(error).message || "Failed to generate code. Please try again.",
         variant: "destructive",
       });
       
@@ -517,15 +672,32 @@ IMPORTANT:
             <div>
               <h3 className="text-sm font-bold text-foreground">AI Assistant</h3>
               <p className="text-xs text-muted-foreground">
-                Powered by {selectedModel === "claude" ? "Claude 3.5 Sonnet" : "Gemini 2.0 Flash"}
+                Powered by{" "}
+                {selectedModel === "openai"
+                  ? "GPT-6.1"
+                  : selectedModel === "claude"
+                    ? "Claude 3.5 Sonnet"
+                    : "Gemini 2.5 Flash"}
               </p>
             </div>
           </div>
-          <Select value={selectedModel} onValueChange={(value: "claude" | "gemini") => setSelectedModel(value)}>
-            <SelectTrigger className="w-[140px] h-9 text-xs">
+          <Select
+            value={selectedModel}
+            onValueChange={(value) => {
+              if (value === "openai" || value === "claude" || value === "gemini") {
+                setSelectedModel(value);
+              }
+            }}
+          >
+            <SelectTrigger className="w-[150px] h-9 text-xs">
               <SelectValue>
                 <div className="flex items-center gap-2">
-                  {selectedModel === "claude" ? (
+                  {selectedModel === "openai" ? (
+                    <>
+                      <Cpu className="w-3 h-3" />
+                      <span>OpenAI</span>
+                    </>
+                  ) : selectedModel === "claude" ? (
                     <>
                       <Bot className="w-3 h-3" />
                       <span>Claude</span>
@@ -540,6 +712,12 @@ IMPORTANT:
               </SelectValue>
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="openai">
+                <div className="flex items-center gap-2">
+                  <Cpu className="w-4 h-4" />
+                  <span>GPT-6.1</span>
+                </div>
+              </SelectItem>
               <SelectItem value="claude">
                 <div className="flex items-center gap-2">
                   <Bot className="w-4 h-4" />
@@ -549,7 +727,7 @@ IMPORTANT:
               <SelectItem value="gemini">
                 <div className="flex items-center gap-2">
                   <Zap className="w-4 h-4" />
-                  <span>Gemini 2.0</span>
+                  <span>Gemini 2.5</span>
                 </div>
               </SelectItem>
             </SelectContent>
