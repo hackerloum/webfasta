@@ -114,11 +114,12 @@ export default function PaymentDialog({
           variant: "destructive",
         });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Payment error:", error);
+      const message = error instanceof Error ? error.message : "An unexpected error occurred";
       toast({
         title: "Error",
-        description: error.message || "An unexpected error occurred",
+        description: message,
         variant: "destructive",
       });
     } finally {
@@ -126,34 +127,37 @@ export default function PaymentDialog({
     }
   };
 
+  const fieldClass =
+    "bg-[#fbf9f5] border-[#e4ddd2] text-[#1a1814] shadow-none placeholder:text-[#6b645b] focus-visible:ring-[#146c43] focus-visible:ring-offset-0";
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] bg-[#fbf9f5] text-[#1a1814] border border-[#e4ddd2] shadow-none font-sans">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <CreditCard className="w-5 h-5 text-primary" />
+          <DialogTitle className="flex items-center gap-2 font-['Newsreader',serif] font-normal text-2xl text-[#1a1814]">
+            <CreditCard className="w-5 h-5 text-[#146c43]" />
             Complete Payment - {planName} Plan
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-[#6b645b]">
             Enter your details to complete the payment via mobile money (M-Pesa, Airtel Money, or Tigo Pesa)
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="amount" className="text-sm font-semibold">
+            <Label htmlFor="amount" className="text-sm text-[#6b645b]">
               Amount
             </Label>
-            <div className="flex items-center gap-2 p-3 rounded-lg bg-muted border border-border">
-              <span className="text-2xl font-bold text-foreground">
+            <div className="flex items-center gap-2 p-3 border border-[#e4ddd2] bg-[#f4f0e8]">
+              <span className="text-2xl font-['Newsreader',serif] text-[#1a1814]">
                 {amount.toLocaleString()} TZS
               </span>
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="buyer_name" className="flex items-center gap-2">
-              <User className="w-4 h-4" />
+            <Label htmlFor="buyer_name" className="flex items-center gap-2 text-[#1a1814]">
+              <User className="w-4 h-4 text-[#6b645b]" />
               Full Name *
             </Label>
             <Input
@@ -164,14 +168,15 @@ export default function PaymentDialog({
               onChange={(e) =>
                 setFormData({ ...formData, buyer_name: e.target.value })
               }
+              className={fieldClass}
               required
               disabled={loading}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="buyer_email" className="flex items-center gap-2">
-              <Mail className="w-4 h-4" />
+            <Label htmlFor="buyer_email" className="flex items-center gap-2 text-[#1a1814]">
+              <Mail className="w-4 h-4 text-[#6b645b]" />
               Email Address *
             </Label>
             <Input
@@ -182,14 +187,15 @@ export default function PaymentDialog({
               onChange={(e) =>
                 setFormData({ ...formData, buyer_email: e.target.value })
               }
+              className={fieldClass}
               required
               disabled={loading}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="buyer_phone" className="flex items-center gap-2">
-              <Phone className="w-4 h-4" />
+            <Label htmlFor="buyer_phone" className="flex items-center gap-2 text-[#1a1814]">
+              <Phone className="w-4 h-4 text-[#6b645b]" />
               Mobile Number *
             </Label>
             <Input
@@ -200,10 +206,11 @@ export default function PaymentDialog({
               onChange={(e) =>
                 setFormData({ ...formData, buyer_phone: e.target.value })
               }
+              className={fieldClass}
               required
               disabled={loading}
             />
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-[#6b645b]">
               Tanzanian mobile format: 07XXXXXXXX (e.g., 0744963858)
             </p>
           </div>
@@ -214,14 +221,14 @@ export default function PaymentDialog({
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={loading}
-              className="flex-1"
+              className="flex-1 border-[#e4ddd2] bg-transparent text-[#1a1814] hover:bg-[#f4f0e8] hover:text-[#1a1814] shadow-none"
             >
               Cancel
             </Button>
             <Button
               type="submit"
               disabled={loading}
-              className="flex-1 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
+              className="flex-1 bg-[#146c43] text-[#fbf9f5] hover:bg-[#0e4d30] shadow-none"
             >
               {loading ? (
                 <>
@@ -237,7 +244,7 @@ export default function PaymentDialog({
             </Button>
           </div>
 
-          <p className="text-xs text-center text-muted-foreground pt-2">
+          <p className="text-xs text-center text-[#6b645b] pt-2">
             You will receive a payment prompt on your mobile phone. Please complete the payment to activate your plan.
           </p>
         </form>
@@ -245,4 +252,3 @@ export default function PaymentDialog({
     </Dialog>
   );
 }
-

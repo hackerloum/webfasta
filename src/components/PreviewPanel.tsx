@@ -1,9 +1,8 @@
 import { Card } from "@/components/ui/card";
-import { Monitor, Smartphone, Tablet, ExternalLink, RefreshCw, Maximize2 } from "lucide-react";
+import { Monitor, Smartphone, Tablet, ExternalLink, RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import PreviewCarousel from "./PreviewCarousel";
 
 interface PreviewPanelProps {
   htmlContent: string;
@@ -19,7 +18,7 @@ const PreviewPanel = ({ htmlContent, isGenerating = false }: PreviewPanelProps) 
   // Check if content is empty or default
   const hasContent = htmlContent && 
     htmlContent.length > 100 && 
-    !htmlContent.includes("Ask the AI to create something amazing");
+    !htmlContent.includes("Describe a page in the chat.");
 
   const getPreviewWidth = () => {
     switch (viewMode) {
@@ -54,86 +53,71 @@ const PreviewPanel = ({ htmlContent, isGenerating = false }: PreviewPanelProps) 
     window.open(url, '_blank');
   };
 
+  const deviceButtonClass = (active: boolean) =>
+    cn(
+      "h-7 w-7 p-0 rounded-none shadow-none",
+      active
+        ? "bg-[#146c43] text-[#fbf9f5] hover:bg-[#0e4d30] hover:text-[#fbf9f5]"
+        : "text-[#6b645b] hover:bg-[#f4f0e8] hover:text-[#1a1814]"
+    );
+
   return (
-    <Card className="h-full bg-card/50 backdrop-blur-sm border-border/50 flex flex-col overflow-hidden">
-      {/* Header */}
-      <div className="relative border-b border-border/50 glass-morphism-light p-3">
-        <div className="flex items-center justify-between">
-          {/* Title and Device Info */}
-          <div>
-            <h3 className="text-sm font-bold text-foreground">Live Preview</h3>
-            <p className="text-xs text-muted-foreground mt-0.5">{getDeviceLabel()}</p>
+    <Card className="h-full bg-[#fbf9f5] text-[#1a1814] border border-[#e4ddd2] shadow-none rounded-none flex flex-col overflow-hidden font-sans">
+      <div className="border-b border-[#e4ddd2] px-3 py-2">
+        <div className="flex items-center justify-between gap-2">
+          <div className="min-w-0">
+            <h3 className="text-sm font-['Newsreader',serif] text-[#1a1814]">Preview</h3>
+            <p className="text-xs text-[#6b645b] truncate">{getDeviceLabel()}</p>
           </div>
 
-          {/* Controls */}
           <div className="flex items-center gap-2">
-            {/* Device Toggle */}
-            <div className="flex gap-1 p-1 bg-muted/50 rounded-lg">
-          <Button
+            <div className="flex border border-[#e4ddd2]">
+              <Button
                 variant="ghost"
-            size="sm"
-            onClick={() => setViewMode("desktop")}
-                className={cn(
-                  "h-8 w-8 p-0 transition-all duration-200",
-                  viewMode === "desktop" 
-                    ? "bg-primary text-primary-foreground shadow-glow" 
-                    : "hover:bg-muted"
-                )}
+                size="sm"
+                onClick={() => setViewMode("desktop")}
+                className={deviceButtonClass(viewMode === "desktop")}
                 title="Desktop view"
-          >
-            <Monitor className="w-4 h-4" />
-          </Button>
-          <Button
+              >
+                <Monitor className="w-4 h-4" />
+              </Button>
+              <Button
                 variant="ghost"
-            size="sm"
-            onClick={() => setViewMode("tablet")}
-                className={cn(
-                  "h-8 w-8 p-0 transition-all duration-200",
-                  viewMode === "tablet" 
-                    ? "bg-primary text-primary-foreground shadow-glow" 
-                    : "hover:bg-muted"
-                )}
+                size="sm"
+                onClick={() => setViewMode("tablet")}
+                className={deviceButtonClass(viewMode === "tablet")}
                 title="Tablet view"
-          >
-            <Tablet className="w-4 h-4" />
-          </Button>
-          <Button
+              >
+                <Tablet className="w-4 h-4" />
+              </Button>
+              <Button
                 variant="ghost"
-            size="sm"
-            onClick={() => setViewMode("mobile")}
-                className={cn(
-                  "h-8 w-8 p-0 transition-all duration-200",
-                  viewMode === "mobile" 
-                    ? "bg-primary text-primary-foreground shadow-glow" 
-                    : "hover:bg-muted"
-                )}
+                size="sm"
+                onClick={() => setViewMode("mobile")}
+                className={deviceButtonClass(viewMode === "mobile")}
                 title="Mobile view"
-          >
-            <Smartphone className="w-4 h-4" />
-          </Button>
+              >
+                <Smartphone className="w-4 h-4" />
+              </Button>
             </div>
 
-            {/* Action Buttons */}
-            <div className="h-8 w-px bg-border/50" />
-            
+            <div className="h-5 w-px bg-[#e4ddd2]" />
+
             <Button
               variant="ghost"
               size="sm"
               onClick={handleRefresh}
-              className="h-8 w-8 p-0 hover:bg-primary/10 transition-all"
+              className="h-7 w-7 p-0 text-[#6b645b] hover:bg-[#f4f0e8] hover:text-[#1a1814] shadow-none"
               title="Refresh preview"
             >
-              <RefreshCw className={cn(
-                "w-4 h-4",
-                isRefreshing && "animate-spin"
-              )} />
+              <RefreshCw className={cn("w-4 h-4", isRefreshing && "animate-spin")} />
             </Button>
 
             <Button
               variant="ghost"
               size="sm"
               onClick={handleOpenInNewTab}
-              className="h-8 w-8 p-0 hover:bg-primary/10 transition-all"
+              className="h-7 w-7 p-0 text-[#6b645b] hover:bg-[#f4f0e8] hover:text-[#1a1814] shadow-none"
               title="Open in new tab"
             >
               <ExternalLink className="w-4 h-4" />
@@ -142,64 +126,42 @@ const PreviewPanel = ({ htmlContent, isGenerating = false }: PreviewPanelProps) 
         </div>
       </div>
 
-      {/* Preview Area */}
       <div className="flex-1 overflow-hidden relative">
-        {/* Show carousel when no content or generating */}
         {(!hasContent || isGenerating) ? (
-          <PreviewCarousel isGenerating={isGenerating} />
+          <div className="h-full bg-[#f4f0e8] flex items-center justify-center px-6">
+            <p className="text-sm text-[#6b645b]">
+              {isGenerating ? "Working" : "Preview will appear here."}
+            </p>
+          </div>
         ) : (
-          <div className="h-full bg-muted/30 p-6 overflow-auto flex items-center justify-center relative">
-            {/* Background pattern */}
-            <div className="absolute inset-0 bg-dots-pattern opacity-30" />
-
-            {/* Device Frame */}
+          <div className="h-full bg-[#f4f0e8] p-3 overflow-auto flex items-center justify-center">
             <div
-              className={cn(
-                "bg-background rounded-2xl shadow-2xl transition-all duration-500 relative overflow-hidden",
-                viewMode === "mobile" && "ring-8 ring-background/50",
-                viewMode === "tablet" && "ring-4 ring-background/50"
-              )}
-              style={{ 
-                width: getPreviewWidth(), 
+              className="bg-[#fbf9f5] border border-[#e4ddd2] relative overflow-hidden"
+              style={{
+                width: getPreviewWidth(),
                 height: viewMode === "desktop" ? "100%" : "90%",
-                maxHeight: viewMode === "desktop" ? "100%" : "800px"
+                maxHeight: viewMode === "desktop" ? "100%" : "800px",
               }}
-        >
-              {/* Device notch for mobile */}
-              {viewMode === "mobile" && (
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-background rounded-b-2xl z-10 border-x border-b border-border/50" />
-              )}
-
-              {/* Loading Bar */}
+            >
               {isRefreshing && (
-                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_100%] animate-gradient z-20" />
+                <div className="absolute top-0 left-0 right-0 h-px bg-[#146c43] z-20" />
               )}
 
-              {/* Iframe */}
-          <iframe
+              <iframe
                 key={isRefreshing ? Date.now() : "preview"}
-            srcDoc={htmlContent}
-                className={cn(
-                  "w-full h-full border-0",
-                  viewMode === "mobile" ? "rounded-2xl pt-6" : "rounded-2xl"
-                )}
-            title="preview"
+                srcDoc={htmlContent}
+                className="w-full h-full border-0 bg-white"
+                title="preview"
                 sandbox="allow-scripts allow-same-origin"
-          />
+              />
             </div>
           </div>
         )}
       </div>
 
-      {/* Status Bar */}
-      <div className="border-t border-border/50 px-4 py-2 glass-morphism-light flex items-center justify-between text-xs text-muted-foreground">
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-          <span>Live</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="font-mono">{viewMode === "desktop" ? "Responsive" : getPreviewWidth()}</span>
-        </div>
+      <div className="border-t border-[#e4ddd2] px-3 py-1.5 flex items-center justify-between text-xs text-[#6b645b]">
+        <span>Live</span>
+        <span className="font-mono">{viewMode === "desktop" ? "Responsive" : getPreviewWidth()}</span>
       </div>
     </Card>
   );

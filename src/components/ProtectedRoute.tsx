@@ -11,11 +11,8 @@ const ProtectedRoute = ({ children, requirePlan = true }: ProtectedRouteProps) =
 
   if (loading) {
     return (
-      <div className="h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
+      <div className="h-screen flex items-center justify-center bg-[#f4f0e8] text-[#1a1814] font-sans">
+        <p className="text-sm text-[#6b645b]">Loading</p>
       </div>
     );
   }

@@ -3,7 +3,7 @@ import CodeEditor from "@/components/CodeEditor";
 import PreviewPanel from "@/components/PreviewPanel";
 import AiChat from "@/components/AiChat";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
-import { Code2, Eye, Code, Home, Download, CheckCircle2, Sparkles, Layers, Menu, MessageSquare } from "lucide-react";
+import { Code2, Eye, Code, Home, Download, CheckCircle2, Layers, Menu, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -35,7 +35,7 @@ const Builder = () => {
 <body>
   <div class="container">
     <h1>Welcome to AI Website Builder</h1>
-    <p>Ask the AI to create something amazing!</p>
+    <p>Describe a page in the chat.</p>
   </div>
   <script id="generated-script"></script>
 </body>
@@ -153,36 +153,26 @@ const Builder = () => {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-background">
-      {/* Enhanced Header */}
-      <header className="relative border-b border-border/50 glass-morphism h-16 px-6 z-10">
+    <div className="h-screen flex flex-col bg-[#f4f0e8] text-[#1a1814] font-sans">
+      <header className="border-b border-[#e4ddd2] bg-[#fbf9f5] h-12 px-3 z-10">
         <div className="flex items-center justify-between h-full">
-          {/* Logo and Project Info */}
-          <div className="flex items-center gap-6">
-            <Link to="/" className="flex items-center gap-3 group">
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary to-accent rounded-xl blur-lg opacity-0 group-hover:opacity-75 transition-opacity duration-300" />
-                <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-glow transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
-                  <Code2 className="w-5 h-5 text-primary-foreground" />
-                </div>
+          <div className="flex items-center gap-4">
+            <Link to="/" className="flex items-center gap-2">
+              <div className="w-7 h-7 border border-[#e4ddd2] bg-[#fbf9f5] flex items-center justify-center">
+                <Code2 className="w-4 h-4 text-[#146c43]" />
               </div>
               <div className="hidden md:block">
-                <h1 className="text-base font-bold text-gradient">AI Builder</h1>
-                <p className="text-xs text-muted-foreground">Studio</p>
+                <h1 className="text-base font-['Newsreader',serif] text-[#1a1814] leading-none">Builder</h1>
               </div>
             </Link>
 
-            {/* Save Status Indicator */}
             <div className={cn(
-              "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all",
-              saveStatus === "saved" ? "bg-green-500/10 text-green-500" :
-              saveStatus === "saving" ? "bg-yellow-500/10 text-yellow-500" :
-              "bg-red-500/10 text-red-500"
+              "flex items-center gap-2 px-2 py-1 text-xs",
+              saveStatus === "saved" ? "text-[#146c43]" :
+              saveStatus === "saving" ? "text-[#6b645b]" :
+              "text-[#1a1814]"
             )}>
-              <CheckCircle2 className={cn(
-                "w-3 h-3",
-                saveStatus === "saving" && "animate-spin"
-              )} />
+              <CheckCircle2 className="w-3 h-3" />
               <span className="hidden sm:inline">
                 {saveStatus === "saved" ? "Saved" : saveStatus === "saving" ? "Saving..." : "Unsaved"}
               </span>
@@ -197,7 +187,7 @@ const Builder = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => setMobileView(mobileView === "chat" ? "preview" : "chat")}
-                className="gap-2 hover:bg-muted transition-all h-8"
+                className="gap-2 h-8 text-[#1a1814] hover:bg-[#f4f0e8] hover:text-[#1a1814] shadow-none"
               >
                 {mobileView === "chat" ? (
                   <>
@@ -220,27 +210,24 @@ const Builder = () => {
                   <Button 
                     size="sm"
                     variant="ghost"
-                    className="gap-2 hover:bg-muted transition-all h-8"
+                    className="gap-2 h-8 text-[#1a1814] hover:bg-[#f4f0e8] hover:text-[#1a1814] shadow-none"
                   >
                     <Menu className="w-4 h-4" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="right" className="w-[90vw] sm:w-[400px] overflow-y-auto">
+                <SheetContent side="right" className="w-[90vw] sm:w-[400px] overflow-y-auto bg-[#fbf9f5] text-[#1a1814] border-[#e4ddd2]">
                   <SheetHeader>
-                    <SheetTitle>Code Editor & Controls</SheetTitle>
+                    <SheetTitle className="font-['Newsreader',serif] font-normal text-[#1a1814]">Code Editor & Controls</SheetTitle>
                   </SheetHeader>
                   <div className="mt-6 space-y-6">
                     {/* Save Status */}
                     <div className={cn(
-                      "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all",
-                      saveStatus === "saved" ? "bg-green-500/10 text-green-500" :
-                      saveStatus === "saving" ? "bg-yellow-500/10 text-yellow-500" :
-                      "bg-red-500/10 text-red-500"
+                      "flex items-center gap-2 px-3 py-2 text-sm",
+                      saveStatus === "saved" ? "text-[#146c43]" :
+                      saveStatus === "saving" ? "text-[#6b645b]" :
+                      "text-[#1a1814]"
                     )}>
-                      <CheckCircle2 className={cn(
-                        "w-4 h-4",
-                        saveStatus === "saving" && "animate-spin"
-                      )} />
+                      <CheckCircle2 className="w-4 h-4" />
                       <span>
                         {saveStatus === "saved" ? "Saved" : saveStatus === "saving" ? "Saving..." : "Unsaved"}
                       </span>
@@ -249,7 +236,7 @@ const Builder = () => {
                     <Separator />
 
                     {/* File count badge */}
-                    <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/50 text-sm font-medium text-muted-foreground">
+                    <div className="flex items-center gap-2 px-3 py-2 text-sm text-[#6b645b] border border-[#e4ddd2]">
                       <Layers className="w-4 h-4" />
                       <span>{files.length} {files.length === 1 ? 'file' : 'files'}</span>
                     </div>
@@ -258,7 +245,7 @@ const Builder = () => {
 
                     {/* View mode toggle */}
                     <div className="space-y-2">
-                      <p className="text-sm font-medium text-muted-foreground mb-2">View Mode</p>
+                      <p className="text-sm text-[#6b645b] mb-2">View Mode</p>
                       <div className="flex flex-col gap-2">
                         <Button
                           variant="ghost"
@@ -270,8 +257,8 @@ const Builder = () => {
                           className={cn(
                             "gap-2 transition-all duration-200 justify-start",
                             viewMode === "code" 
-                              ? "bg-primary text-primary-foreground shadow-glow hover:bg-primary/90" 
-                              : "hover:bg-muted"
+                              ? "bg-[#146c43] text-[#fbf9f5] hover:bg-[#0e4d30] shadow-none" 
+                              : "text-[#1a1814] hover:bg-[#f4f0e8] hover:text-[#1a1814]"
                           )}
                         >
                           <Code className="w-4 h-4" />
@@ -287,8 +274,8 @@ const Builder = () => {
                           className={cn(
                             "gap-2 transition-all duration-200 justify-start",
                             viewMode === "split" 
-                              ? "bg-primary text-primary-foreground shadow-glow hover:bg-primary/90" 
-                              : "hover:bg-muted"
+                              ? "bg-[#146c43] text-[#fbf9f5] hover:bg-[#0e4d30] shadow-none" 
+                              : "text-[#1a1814] hover:bg-[#f4f0e8] hover:text-[#1a1814]"
                           )}
                         >
                           <Code2 className="w-4 h-4" />
@@ -304,8 +291,8 @@ const Builder = () => {
                           className={cn(
                             "gap-2 transition-all duration-200 justify-start",
                             viewMode === "preview" 
-                              ? "bg-primary text-primary-foreground shadow-glow hover:bg-primary/90" 
-                              : "hover:bg-muted"
+                              ? "bg-[#146c43] text-[#fbf9f5] hover:bg-[#0e4d30] shadow-none" 
+                              : "text-[#1a1814] hover:bg-[#f4f0e8] hover:text-[#1a1814]"
                           )}
                         >
                           <Eye className="w-4 h-4" />
@@ -318,8 +305,8 @@ const Builder = () => {
 
                     {/* Code Editor */}
                     <div className="space-y-2">
-                      <p className="text-sm font-medium text-muted-foreground mb-2">Code Editor</p>
-                      <div className="h-[400px] rounded-lg overflow-hidden border border-border">
+                      <p className="text-sm text-[#6b645b] mb-2">Code Editor</p>
+                      <div className="h-[400px] overflow-hidden border border-[#e4ddd2]">
                         <CodeEditor
                           files={files}
                           activeFile={activeFile}
@@ -336,7 +323,7 @@ const Builder = () => {
                       <Button 
                         size="sm"
                         variant="outline"
-                        className="w-full gap-2 border-primary/30 hover:border-primary/50 hover:bg-primary/10 transition-all"
+                        className="w-full gap-2 border-[#e4ddd2] bg-transparent text-[#1a1814] hover:bg-[#f4f0e8] hover:text-[#1a1814] shadow-none"
                       >
                         <Download className="w-4 h-4" />
                         <span className="text-sm font-semibold">Export</span>
@@ -345,7 +332,7 @@ const Builder = () => {
                         <Button 
                           size="sm"
                           variant="ghost"
-                          className="w-full gap-2 hover:bg-muted transition-all"
+                          className="w-full gap-2 text-[#1a1814] hover:bg-[#f4f0e8] hover:text-[#1a1814] shadow-none"
                         >
                           <Home className="w-4 h-4" />
                           <span className="text-sm font-semibold">Home</span>
@@ -361,13 +348,13 @@ const Builder = () => {
             {isDesktop && (
               <>
                 {/* File count badge */}
-                <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/50 text-xs font-medium text-muted-foreground">
+                <div className="hidden md:flex items-center gap-2 px-2 py-1 text-xs text-[#6b645b]">
                   <Layers className="w-3 h-3" />
                   <span>{files.length} {files.length === 1 ? 'file' : 'files'}</span>
                 </div>
 
                 {/* View mode toggle */}
-                <div className="flex items-center gap-1 p-1 bg-muted/50 rounded-xl">
+                <div className="flex items-center border border-[#e4ddd2]">
                   <Button
                     variant="ghost"
                     size="sm"
@@ -375,8 +362,8 @@ const Builder = () => {
                     className={cn(
                       "gap-2 transition-all duration-200 h-8",
                       viewMode === "code" 
-                        ? "bg-primary text-primary-foreground shadow-glow hover:bg-primary/90" 
-                        : "hover:bg-muted"
+                        ? "bg-[#146c43] text-[#fbf9f5] hover:bg-[#0e4d30] shadow-none" 
+                        : "text-[#1a1814] hover:bg-[#f4f0e8] hover:text-[#1a1814]"
                     )}
                   >
                     <Code className="w-4 h-4" />
@@ -389,8 +376,8 @@ const Builder = () => {
                     className={cn(
                       "gap-2 transition-all duration-200 h-8",
                       viewMode === "split" 
-                        ? "bg-primary text-primary-foreground shadow-glow hover:bg-primary/90" 
-                        : "hover:bg-muted"
+                        ? "bg-[#146c43] text-[#fbf9f5] hover:bg-[#0e4d30] shadow-none" 
+                        : "text-[#1a1814] hover:bg-[#f4f0e8] hover:text-[#1a1814]"
                     )}
                   >
                     <Code2 className="w-4 h-4" />
@@ -403,8 +390,8 @@ const Builder = () => {
                     className={cn(
                       "gap-2 transition-all duration-200 h-8",
                       viewMode === "preview" 
-                        ? "bg-primary text-primary-foreground shadow-glow hover:bg-primary/90" 
-                        : "hover:bg-muted"
+                        ? "bg-[#146c43] text-[#fbf9f5] hover:bg-[#0e4d30] shadow-none" 
+                        : "text-[#1a1814] hover:bg-[#f4f0e8] hover:text-[#1a1814]"
                     )}
                   >
                     <Eye className="w-4 h-4" />
@@ -416,7 +403,7 @@ const Builder = () => {
                 <Button 
                   size="sm"
                   variant="outline"
-                  className="gap-2 border-primary/30 hover:border-primary/50 hover:bg-primary/10 transition-all h-8"
+                  className="gap-2 h-8 border-[#e4ddd2] bg-transparent text-[#1a1814] hover:bg-[#f4f0e8] hover:text-[#1a1814] shadow-none"
                 >
                   <Download className="w-4 h-4" />
                   <span className="hidden md:inline text-xs font-semibold">Export</span>
@@ -427,7 +414,7 @@ const Builder = () => {
                   <Button 
                     size="sm"
                     variant="ghost"
-                    className="gap-2 hover:bg-muted transition-all h-8"
+                    className="gap-2 h-8 text-[#1a1814] hover:bg-[#f4f0e8] hover:text-[#1a1814] shadow-none"
                   >
                     <Home className="w-4 h-4" />
                   </Button>
@@ -452,8 +439,8 @@ const Builder = () => {
                   : "opacity-0 -translate-x-full pointer-events-none z-0"
               )}
             >
-              <div className="h-full p-3 bg-background">
-                <div className="h-full rounded-xl overflow-hidden">
+              <div className="h-full bg-[#fbf9f5]">
+                <div className="h-full overflow-hidden">
                   <AiChat 
                     onCodeGenerated={handleCodeGenerated}
                     onGeneratingStart={handleGeneratingStart}
@@ -472,8 +459,8 @@ const Builder = () => {
                   : "opacity-0 translate-x-full pointer-events-none z-0"
               )}
             >
-              <div className="h-full p-3 bg-background">
-                <div className="h-full rounded-xl overflow-hidden">
+              <div className="h-full bg-[#fbf9f5]">
+                <div className="h-full overflow-hidden">
                   <PreviewPanel 
                     htmlContent={getPreviewContent()}
                     isGenerating={isGenerating}
@@ -487,8 +474,8 @@ const Builder = () => {
           <ResizablePanelGroup direction="horizontal" className="h-full">
             {/* Left Panel - AI Chat */}
             <ResizablePanel defaultSize={25} minSize={20} maxSize={40} className="relative">
-              <div className="h-full p-3 bg-background">
-                <div className="h-full rounded-xl overflow-hidden">
+              <div className="h-full bg-[#fbf9f5]">
+                <div className="h-full overflow-hidden">
                   <AiChat 
                     onCodeGenerated={handleCodeGenerated}
                     onGeneratingStart={handleGeneratingStart}
@@ -498,15 +485,15 @@ const Builder = () => {
               </div>
             </ResizablePanel>
 
-            <ResizableHandle withHandle className="hover:bg-primary/20 transition-colors" />
+            <ResizableHandle withHandle className="bg-[#e4ddd2] hover:bg-[#146c43]" />
 
             {/* Dynamic Content Area */}
             {viewMode === "split" && (
               <>
                 {/* Middle Panel - Code Editor */}
                 <ResizablePanel defaultSize={40} minSize={30} className="relative">
-                  <div className="h-full p-3 bg-background">
-                    <div className="h-full rounded-xl overflow-hidden">
+                  <div className="h-full bg-[#fbf9f5]">
+                    <div className="h-full overflow-hidden">
                       <CodeEditor
                         files={files}
                         activeFile={activeFile}
@@ -517,12 +504,12 @@ const Builder = () => {
                   </div>
                 </ResizablePanel>
 
-                <ResizableHandle withHandle className="hover:bg-primary/20 transition-colors" />
+                <ResizableHandle withHandle className="bg-[#e4ddd2] hover:bg-[#146c43]" />
 
                 {/* Right Panel - Preview */}
                 <ResizablePanel defaultSize={35} minSize={30} className="relative">
-                  <div className="h-full p-3 bg-background">
-                    <div className="h-full rounded-xl overflow-hidden">
+                  <div className="h-full bg-[#fbf9f5]">
+                    <div className="h-full overflow-hidden">
                       <PreviewPanel 
                         htmlContent={getPreviewContent()}
                         isGenerating={isGenerating}
@@ -535,8 +522,8 @@ const Builder = () => {
 
             {viewMode === "code" && (
               <ResizablePanel defaultSize={75} minSize={50} className="relative">
-                <div className="h-full p-3 bg-background">
-                  <div className="h-full rounded-xl overflow-hidden">
+                <div className="h-full bg-[#fbf9f5]">
+                  <div className="h-full overflow-hidden">
                     <CodeEditor
                       files={files}
                       activeFile={activeFile}
@@ -550,8 +537,8 @@ const Builder = () => {
 
             {viewMode === "preview" && (
               <ResizablePanel defaultSize={75} minSize={50} className="relative">
-                <div className="h-full p-3 bg-background">
-                  <div className="h-full rounded-xl overflow-hidden">
+                <div className="h-full bg-[#fbf9f5]">
+                  <div className="h-full overflow-hidden">
                     <PreviewPanel 
                       htmlContent={getPreviewContent()}
                       isGenerating={isGenerating}
@@ -565,14 +552,11 @@ const Builder = () => {
       </div>
 
       {/* Status Bar - Bottom */}
-      <footer className="h-8 px-6 flex items-center justify-between border-t border-border/50 glass-morphism text-xs text-muted-foreground">
+      <footer className="h-8 px-3 flex items-center justify-between border-t border-[#e4ddd2] bg-[#fbf9f5] text-xs text-[#6b645b]">
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-3 h-3 text-primary" />
-            <span>Ready</span>
-          </div>
+          <span>Ready</span>
           <div className="hidden md:block">
-            <span>Press <kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">Cmd+K</kbd> for shortcuts</span>
+            <span>Press <kbd className="px-1.5 py-0.5 border border-[#e4ddd2] bg-[#f4f0e8] text-[#1a1814] font-mono text-[10px]">Cmd+K</kbd> for shortcuts</span>
           </div>
         </div>
         <div className="flex items-center gap-4">

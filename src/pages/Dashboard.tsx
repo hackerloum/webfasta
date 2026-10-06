@@ -1,29 +1,16 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
-  User,
-  Sparkles,
   Code2,
-  Settings,
   CreditCard,
   FileText,
-  HelpCircle,
   LogOut,
-  ArrowRight,
-  CheckCircle2,
-  Calendar,
-  Mail,
-  Crown,
-  Zap,
-  Rocket,
-  BarChart3,
   BookOpen,
   LayoutDashboard,
   Menu,
-  X
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -65,11 +52,8 @@ const Dashboard = () => {
   // Show loading while checking auth
   if (loading || !authChecked) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
+      <div className="min-h-screen bg-[#f4f0e8] text-[#1a1814] font-sans flex items-center justify-center">
+        <p className="text-sm text-[#6b645b]">Loading</p>
       </div>
     );
   }
@@ -82,392 +66,267 @@ const Dashboard = () => {
   const planInfo = {
     free: {
       name: "Free",
-      icon: <Zap className="w-5 h-5" />,
-      color: "from-blue-500 to-cyan-500",
-      features: ["Unlimited AI generations", "Basic templates", "5 active projects"]
+      features: ["Unlimited AI generations", "Basic templates", "5 active projects"],
     },
     starter: {
       name: "Starter",
-      icon: <Rocket className="w-5 h-5" />,
-      color: "from-green-500 to-emerald-500",
-      features: ["Everything in Free", "3 active websites", "Email support"]
+      features: ["Everything in Free", "3 active websites", "Email support"],
     },
     pro: {
       name: "Pro",
-      icon: <Crown className="w-5 h-5" />,
-      color: "from-primary to-accent",
-      features: ["Everything in Starter", "Unlimited websites", "Priority support"]
+      features: ["Everything in Starter", "Unlimited websites", "Priority support"],
     },
     business: {
       name: "Business",
-      icon: <Crown className="w-5 h-5" />,
-      color: "from-purple-500 to-pink-500",
-      features: ["Everything in Pro", "Dedicated support", "Custom features"]
+      features: ["Everything in Pro", "Dedicated support", "Custom features"],
     },
     enterprise: {
       name: "Enterprise",
-      icon: <Crown className="w-5 h-5" />,
-      color: "from-purple-500 to-pink-500",
-      features: ["Everything in Business", "Custom integrations", "24/7 support"]
-    }
+      features: ["Everything in Business", "Custom integrations", "24/7 support"],
+    },
   };
 
   const currentPlan = planInfo[subscriptionPlan as keyof typeof planInfo] || planInfo.free;
+  const displayName = userProfile?.fullName || user.email?.split("@")[0] || "User";
 
   const sidebarLinks = [
     {
       title: "Dashboard",
-      icon: <LayoutDashboard className="w-5 h-5" />,
+      icon: <LayoutDashboard className="w-4 h-4" />,
       link: "/dashboard",
-      active: true
+      active: true,
     },
     {
       title: "Builder",
-      icon: <Sparkles className="w-5 h-5" />,
+      icon: <Code2 className="w-4 h-4" />,
       link: "/builder",
-      active: false
+      active: false,
     },
     {
       title: "Projects",
-      icon: <Code2 className="w-5 h-5" />,
+      icon: <Code2 className="w-4 h-4" />,
       link: "/builder",
-      active: false
+      active: false,
     },
     {
       title: "Templates",
-      icon: <FileText className="w-5 h-5" />,
+      icon: <FileText className="w-4 h-4" />,
       link: "/features",
-      active: false
+      active: false,
     },
     {
       title: "Documentation",
-      icon: <BookOpen className="w-5 h-5" />,
+      icon: <BookOpen className="w-4 h-4" />,
       link: "/about",
-      active: false
-    }
-  ];
-
-  const stats = [
-    {
-      label: "Projects Created",
-      value: "0",
-      icon: <Code2 className="w-5 h-5" />,
-      color: "text-primary"
+      active: false,
     },
-    {
-      label: "AI Generations",
-      value: "0",
-      icon: <Sparkles className="w-5 h-5" />,
-      color: "text-accent"
-    },
-    {
-      label: "Account Created",
-      value: new Date(userProfile?.createdAt || Date.now()).toLocaleDateString(),
-      icon: <Calendar className="w-5 h-5" />,
-      color: "text-green-500"
-    }
   ];
 
   const quickActions = [
     {
       title: "Start Building",
       description: "Create a new website with AI",
-      icon: <Sparkles className="w-6 h-6" />,
       link: "/builder",
-      color: "from-primary to-accent",
-      gradient: "from-primary/20 to-accent/20"
     },
     {
       title: "View Projects",
       description: "See all your websites",
-      icon: <Code2 className="w-6 h-6" />,
       link: "/builder",
-      color: "from-blue-500 to-cyan-500",
-      gradient: "from-blue-500/20 to-cyan-500/20"
     },
     {
       title: "Browse Templates",
       description: "Explore website templates",
-      icon: <FileText className="w-6 h-6" />,
       link: "/features",
-      color: "from-green-500 to-emerald-500",
-      gradient: "from-green-500/20 to-emerald-500/20"
-    }
+    },
   ];
 
+  const memberSince = userProfile?.createdAt
+    ? new Date(userProfile.createdAt).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    : "Recently";
+
   return (
-    <div className="min-h-screen bg-background flex">
-      {/* Sidebar */}
-      <aside className={cn(
-        "fixed inset-y-0 left-0 z-50 w-64 bg-card/95 backdrop-blur-xl border-r border-border transition-transform duration-300 lg:translate-x-0",
-        sidebarOpen ? "translate-x-0" : "-translate-x-full"
-      )}>
-        <div className="flex flex-col h-full">
-          {/* Logo/Header */}
-          <div className="flex items-center justify-between p-6 border-b border-border">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-primary-foreground" />
-              </div>
-              <div>
-                <h1 className="text-lg font-bold text-foreground">AI Studio</h1>
-                <p className="text-xs text-muted-foreground">Dashboard</p>
-              </div>
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="lg:hidden"
-              onClick={() => setSidebarOpen(false)}
+    <div className="min-h-screen bg-[#f4f0e8] text-[#1a1814] font-sans">
+      <aside
+        className={cn(
+          "fixed inset-y-0 left-0 z-50 w-56 bg-[#fbf9f5] border-r border-[#e4ddd2] flex flex-col transition-transform duration-200 lg:translate-x-0",
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
+        <div className="flex items-center justify-between h-12 px-4 border-b border-[#e4ddd2]">
+          <p className="font-['Newsreader',serif] text-lg leading-none">Webfasta</p>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="lg:hidden h-8 w-8 text-[#1a1814] hover:bg-[#f4f0e8] hover:text-[#1a1814]"
+            onClick={() => setSidebarOpen(false)}
+          >
+            <X className="w-4 h-4" />
+          </Button>
+        </div>
+
+        <nav className="flex-1 p-2 space-y-0.5 overflow-y-auto">
+          {sidebarLinks.map((link) => (
+            <Link
+              key={link.title}
+              to={link.link}
+              className={cn(
+                "flex items-center gap-2 px-2 py-1.5 text-sm",
+                link.active
+                  ? "bg-[#146c43] text-[#fbf9f5]"
+                  : "text-[#6b645b] hover:bg-[#f4f0e8] hover:text-[#1a1814]"
+              )}
             >
-              <X className="w-5 h-5" />
+              {link.icon}
+              <span>{link.title}</span>
+            </Link>
+          ))}
+        </nav>
+
+        <div className="p-3 border-t border-[#e4ddd2] space-y-2">
+          <div className="min-w-0">
+            <p className="text-sm truncate">{displayName}</p>
+            <p className="text-xs text-[#6b645b] truncate">{user.email}</p>
+          </div>
+          <Link to="/pricing" className="block">
+            <Button
+              variant="outline"
+              className="w-full justify-start h-8 border-[#e4ddd2] bg-transparent text-[#1a1814] hover:bg-[#f4f0e8] hover:text-[#1a1814] shadow-none"
+              size="sm"
+            >
+              <CreditCard className="w-4 h-4 mr-2" />
+              Manage Plan
             </Button>
-          </div>
-
-          {/* Navigation */}
-          <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-            {sidebarLinks.map((link) => (
-              <Link
-                key={link.title}
-                to={link.link}
-                className={cn(
-                  "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200",
-                  link.active
-                    ? "bg-gradient-to-r from-primary/20 to-accent/20 text-primary border border-primary/30"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                )}
-              >
-                {link.icon}
-                <span className="font-medium">{link.title}</span>
-              </Link>
-            ))}
-          </nav>
-
-          {/* User Section */}
-          <div className="p-4 border-t border-border">
-            <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/50 mb-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                <User className="w-5 h-5 text-primary" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-foreground truncate">
-                  {userProfile?.fullName || user.email?.split("@")[0] || "User"}
-                </p>
-                <p className="text-xs text-muted-foreground truncate">{user.email}</p>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Link to="/pricing">
-                <Button variant="outline" className="w-full justify-start" size="sm">
-                  <CreditCard className="w-4 h-4 mr-2" />
-                  Manage Plan
-                </Button>
-              </Link>
-              <Button
-                variant="outline"
-                className="w-full justify-start text-destructive hover:text-destructive"
-                size="sm"
-                onClick={signOut}
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                Sign Out
-              </Button>
-            </div>
-          </div>
+          </Link>
+          <Button
+            variant="outline"
+            className="w-full justify-start h-8 border-[#e4ddd2] bg-transparent text-[#1a1814] hover:bg-[#f4f0e8] hover:text-[#1a1814] shadow-none"
+            size="sm"
+            onClick={signOut}
+          >
+            <LogOut className="w-4 h-4 mr-2" />
+            Sign Out
+          </Button>
         </div>
       </aside>
 
-      {/* Sidebar Overlay (Mobile) */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40 lg:hidden"
+          className="fixed inset-0 bg-[#1a1814]/20 z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
-      {/* Main Content */}
-      <div className="flex-1 lg:ml-64">
-        {/* Top Bar */}
-        <header className="sticky top-0 z-30 bg-card/80 backdrop-blur-xl border-b border-border">
-          <div className="flex items-center justify-between px-6 py-4">
-            <div className="flex items-center gap-4">
+      <div className="lg:ml-56">
+        <header className="sticky top-0 z-30 bg-[#fbf9f5] border-b border-[#e4ddd2]">
+          <div className="flex items-center justify-between h-12 px-4">
+            <div className="flex items-center gap-2">
               <Button
                 variant="ghost"
                 size="icon"
-                className="lg:hidden"
+                className="lg:hidden h-8 w-8 text-[#1a1814] hover:bg-[#f4f0e8] hover:text-[#1a1814]"
                 onClick={() => setSidebarOpen(true)}
               >
-                <Menu className="w-5 h-5" />
+                <Menu className="w-4 h-4" />
               </Button>
-              <div>
-                <h2 className="text-2xl font-bold text-foreground">Dashboard</h2>
-                <p className="text-sm text-muted-foreground">Welcome back, {userProfile?.fullName || user.email?.split("@")[0] || "User"}!</p>
-              </div>
+              <h1 className="font-['Newsreader',serif] text-xl leading-none">Account</h1>
             </div>
-            <div className="flex items-center gap-3">
-              <div className={cn(
-                "flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r text-white",
-                currentPlan.color
-              )}>
-                {currentPlan.icon}
-                <span className="text-sm font-semibold">{currentPlan.name}</span>
-              </div>
-            </div>
+            <span className="text-xs px-2 py-1 border border-[#e4ddd2] text-[#146c43]">
+              {currentPlan.name}
+            </span>
           </div>
         </header>
 
-        {/* Main Content Area */}
-        <main className="p-6 space-y-6">
-          {/* Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {stats.map((stat, index) => (
-              <Card
-                key={index}
-                className="p-6 bg-card/50 backdrop-blur-sm border-border/50 hover:border-primary/30 transition-all duration-300"
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <div className={cn("p-3 rounded-xl bg-muted/50", stat.color)}>
-                    {stat.icon}
-                  </div>
-                </div>
-                <p className="text-2xl font-bold text-foreground mb-1">{stat.value}</p>
-                <p className="text-sm text-muted-foreground">{stat.label}</p>
-              </Card>
-            ))}
-          </div>
-
-          {/* Quick Actions */}
-          <div>
-            <h3 className="text-lg font-semibold text-foreground mb-4">Quick Actions</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {quickActions.map((action, index) => (
-                <Link key={index} to={action.link}>
-                  <Card className={cn(
-                    "p-6 bg-card/50 backdrop-blur-sm border-border/50 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 cursor-pointer group",
-                    `hover:bg-gradient-to-br ${action.gradient}`
-                  )}>
-                    <div className={cn(
-                      "w-12 h-12 rounded-xl bg-gradient-to-br flex items-center justify-center text-white mb-4 group-hover:scale-110 transition-transform",
-                      action.color
-                    )}>
-                      {action.icon}
-                    </div>
-                    <h4 className="text-lg font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
-                      {action.title}
-                    </h4>
-                    <p className="text-sm text-muted-foreground">{action.description}</p>
-                  </Card>
-                </Link>
-              ))}
+        <main className="max-w-2xl px-4 py-8 space-y-8">
+          <section>
+            <h2 className="font-['Newsreader',serif] text-3xl leading-tight">{displayName}</h2>
+            <p className="text-sm text-[#6b645b] mt-1">{user.email}</p>
+            <p className="text-sm mt-3">Plan: {currentPlan.name}</p>
+            <div className="flex flex-wrap gap-2 mt-4">
+              <Link to="/builder">
+                <Button className="h-9 bg-[#146c43] text-[#fbf9f5] hover:bg-[#0e4d30] shadow-none">
+                  Start building
+                </Button>
+              </Link>
+              <Link to="/pricing">
+                <Button
+                  variant="outline"
+                  className="h-9 border-[#e4ddd2] bg-transparent text-[#1a1814] hover:bg-[#fbf9f5] hover:text-[#1a1814] shadow-none"
+                >
+                  Manage plan
+                </Button>
+              </Link>
             </div>
-          </div>
+          </section>
 
-          {/* Account Information & Plan Features */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Account Information */}
-            <Card className="p-6 bg-card/50 backdrop-blur-sm border-border/50">
-              <h3 className="text-lg font-semibold text-foreground mb-4">Account Information</h3>
-              <div className="space-y-4">
-                <div className="flex items-start gap-4 p-4 rounded-xl bg-muted/50">
-                  <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
-                    <User className="w-5 h-5 text-primary" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm text-muted-foreground mb-1">Full Name</p>
-                    <p className="text-base font-semibold text-foreground">
-                      {userProfile?.fullName || "Not set"}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4 p-4 rounded-xl bg-muted/50">
-                  <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
-                    <Mail className="w-5 h-5 text-primary" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm text-muted-foreground mb-1">Email Address</p>
-                    <p className="text-base font-semibold text-foreground">{user.email}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4 p-4 rounded-xl bg-muted/50">
-                  <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
-                    <Calendar className="w-5 h-5 text-primary" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm text-muted-foreground mb-1">Member Since</p>
-                    <p className="text-base font-semibold text-foreground">
-                      {userProfile?.createdAt
-                        ? new Date(userProfile.createdAt).toLocaleDateString("en-US", {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric"
-                          })
-                        : "Recently"}
-                    </p>
-                  </div>
-                </div>
+          <section className="border border-[#e4ddd2] bg-[#fbf9f5]">
+            <h3 className="px-4 py-2 text-sm border-b border-[#e4ddd2]">Details</h3>
+            <dl className="text-sm divide-y divide-[#e4ddd2]">
+              <div className="grid grid-cols-[8rem_1fr] gap-3 px-4 py-2.5">
+                <dt className="text-[#6b645b]">Name</dt>
+                <dd>{userProfile?.fullName || "Not set"}</dd>
               </div>
-            </Card>
+              <div className="grid grid-cols-[8rem_1fr] gap-3 px-4 py-2.5">
+                <dt className="text-[#6b645b]">Email</dt>
+                <dd className="break-all">{user.email}</dd>
+              </div>
+              <div className="grid grid-cols-[8rem_1fr] gap-3 px-4 py-2.5">
+                <dt className="text-[#6b645b]">Member since</dt>
+                <dd>{memberSince}</dd>
+              </div>
+              <div className="grid grid-cols-[8rem_1fr] gap-3 px-4 py-2.5">
+                <dt className="text-[#6b645b]">Projects</dt>
+                <dd>0</dd>
+              </div>
+              <div className="grid grid-cols-[8rem_1fr] gap-3 px-4 py-2.5">
+                <dt className="text-[#6b645b]">Generations</dt>
+                <dd>0</dd>
+              </div>
+              <div className="grid grid-cols-[8rem_1fr] gap-3 px-4 py-2.5">
+                <dt className="text-[#6b645b]">Account created</dt>
+                <dd>{new Date(userProfile?.createdAt || Date.now()).toLocaleDateString()}</dd>
+              </div>
+            </dl>
+          </section>
 
-            {/* Plan Features */}
-            <Card className="p-6 bg-card/50 backdrop-blur-sm border-border/50">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-foreground">Your Plan</h3>
-                <Link to="/pricing">
-                  <Button variant="outline" size="sm">
-                    Change Plan
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
-                </Link>
-              </div>
-              <div className="flex items-center gap-4 mb-6">
-                <div className={cn(
-                  "w-16 h-16 rounded-2xl bg-gradient-to-br flex items-center justify-center text-white",
-                  currentPlan.color
-                )}>
-                  {currentPlan.icon}
-                </div>
-                <div>
-                  <h4 className="text-2xl font-bold text-foreground">{currentPlan.name} Plan</h4>
-                  <p className="text-sm text-muted-foreground">Your current subscription</p>
-                </div>
-              </div>
-              <div className="space-y-2">
-                {currentPlan.features.map((feature, index) => (
-                  <div key={index} className="flex items-start gap-3 p-2 rounded-lg">
-                    <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                    <span className="text-sm text-foreground">{feature}</span>
-                  </div>
-                ))}
-              </div>
-            </Card>
-          </div>
+          <section className="border border-[#e4ddd2] bg-[#fbf9f5]">
+            <div className="flex items-center justify-between px-4 py-2 border-b border-[#e4ddd2]">
+              <h3 className="text-sm">{currentPlan.name} plan</h3>
+              <Link to="/pricing" className="text-sm text-[#146c43] hover:text-[#0e4d30]">
+                Change Plan
+              </Link>
+            </div>
+            <ul className="px-4 py-3 space-y-1.5 text-sm">
+              {currentPlan.features.map((feature) => (
+                <li key={feature}>{feature}</li>
+              ))}
+            </ul>
+          </section>
 
-          {/* Getting Started (Free Plan Only) */}
+          <section>
+            <h3 className="text-sm text-[#6b645b] mb-2">Actions</h3>
+            <ul className="border border-[#e4ddd2] bg-[#fbf9f5] divide-y divide-[#e4ddd2]">
+              {quickActions.map((action) => (
+                <li key={action.title}>
+                  <Link to={action.link} className="block px-4 py-3 hover:bg-[#f4f0e8]">
+                    <span className="text-sm">{action.title}</span>
+                    <span className="block text-xs text-[#6b645b] mt-0.5">{action.description}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+
           {subscriptionPlan === "free" && (
-            <Card className="p-8 bg-gradient-to-br from-primary/10 via-accent/10 to-primary/10 border-primary/20">
-              <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-                <div>
-                  <h3 className="text-2xl font-bold text-foreground mb-2">
-                    Ready to Build Something Amazing?
-                  </h3>
-                  <p className="text-muted-foreground">
-                    Start creating your first website with AI. It's free and takes less than a minute.
-                  </p>
-                </div>
-                <Link to="/builder">
-                  <Button
-                    size="lg"
-                    className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg hover:shadow-glow transition-all hover:scale-105"
-                  >
-                    <Sparkles className="w-5 h-5 mr-2" />
-                    Start Building Now
-                    <ArrowRight className="w-5 h-5 ml-2" />
-                  </Button>
-                </Link>
-              </div>
-            </Card>
+            <p className="text-sm text-[#6b645b]">
+              The builder is included on the free plan.{" "}
+              <Link to="/builder" className="text-[#146c43] hover:text-[#0e4d30]">
+                Start building
+              </Link>
+            </p>
           )}
         </main>
       </div>

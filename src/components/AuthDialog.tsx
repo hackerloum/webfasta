@@ -7,7 +7,6 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
 import { Loader2, Mail, Lock, User } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 interface AuthDialogProps {
   open: boolean;
@@ -86,10 +85,11 @@ const AuthDialog = ({ open, onOpenChange, mode, onModeChange }: AuthDialogProps)
           }, 500);
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Something went wrong";
       toast({
         title: "Error",
-        description: error.message || "Something went wrong",
+        description: message,
         variant: "destructive",
       });
     } finally {
@@ -97,35 +97,38 @@ const AuthDialog = ({ open, onOpenChange, mode, onModeChange }: AuthDialogProps)
     }
   };
 
+  const fieldClass =
+    "pl-10 bg-[#fbf9f5] border-[#e4ddd2] text-[#1a1814] shadow-none placeholder:text-[#6b645b] focus-visible:ring-[#146c43] focus-visible:ring-offset-0";
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md bg-card/95 backdrop-blur-xl border-border/50">
+      <DialogContent className="sm:max-w-md bg-[#fbf9f5] text-[#1a1814] border border-[#e4ddd2] shadow-none font-sans">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-foreground">
-            {mode === "signin" ? "Welcome Back" : "Create Account"}
+          <DialogTitle className="text-2xl font-['Newsreader',serif] font-normal text-[#1a1814]">
+            {mode === "signin" ? "Sign in" : "Create account"}
           </DialogTitle>
-          <DialogDescription className="text-muted-foreground">
+          <DialogDescription className="text-[#6b645b]">
             {mode === "signin"
-              ? "Sign in to continue building amazing websites"
-              : "Start your journey with AI Website Studio"}
+              ? "Use the email and password on your account."
+              : "Name, email, and a password of at least 6 characters."}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
           {mode === "signup" && (
             <div className="space-y-2">
-              <Label htmlFor="fullName" className="text-foreground">
+              <Label htmlFor="fullName" className="text-[#1a1814]">
                 Full Name
               </Label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6b645b]" />
                 <Input
                   id="fullName"
                   type="text"
                   placeholder="John Doe"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="pl-10 bg-background/50 border-border/50"
+                  className={fieldClass}
                   required
                 />
               </div>
@@ -133,36 +136,36 @@ const AuthDialog = ({ open, onOpenChange, mode, onModeChange }: AuthDialogProps)
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-foreground">
+            <Label htmlFor="email" className="text-[#1a1814]">
               Email
             </Label>
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6b645b]" />
               <Input
                 id="email"
                 type="email"
                 placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="pl-10 bg-background/50 border-border/50"
+                className={fieldClass}
                 required
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password" className="text-foreground">
+            <Label htmlFor="password" className="text-[#1a1814]">
               Password
             </Label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6b645b]" />
               <Input
                 id="password"
                 type="password"
                 placeholder={mode === "signin" ? "Enter your password" : "At least 6 characters"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="pl-10 bg-background/50 border-border/50"
+                className={fieldClass}
                 required
               />
             </div>
@@ -170,7 +173,7 @@ const AuthDialog = ({ open, onOpenChange, mode, onModeChange }: AuthDialogProps)
 
           <Button
             type="submit"
-            className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-lg font-semibold shadow-lg hover:shadow-glow transition-all"
+            className="w-full bg-[#146c43] text-[#fbf9f5] hover:bg-[#0e4d30] shadow-none font-sans"
             disabled={isLoading}
           >
             {isLoading ? (
@@ -188,15 +191,15 @@ const AuthDialog = ({ open, onOpenChange, mode, onModeChange }: AuthDialogProps)
           <button
             type="button"
             onClick={() => onModeChange(mode === "signin" ? "signup" : "signin")}
-            className="text-sm text-muted-foreground hover:text-primary transition-colors"
+            className="text-sm text-[#6b645b] hover:text-[#146c43]"
           >
             {mode === "signin" ? (
               <>
-                Don't have an account? <span className="font-semibold text-primary">Sign up</span>
+                Don't have an account? <span className="text-[#146c43]">Sign up</span>
               </>
             ) : (
               <>
-                Already have an account? <span className="font-semibold text-primary">Sign in</span>
+                Already have an account? <span className="text-[#146c43]">Sign in</span>
               </>
             )}
           </button>
@@ -207,4 +210,3 @@ const AuthDialog = ({ open, onOpenChange, mode, onModeChange }: AuthDialogProps)
 };
 
 export default AuthDialog;
-

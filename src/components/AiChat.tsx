@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Send, Sparkles, Wand2, Lightbulb, Bot, Zap, Cpu } from "lucide-react";
+import { Loader2, Send, Bot, Zap, Cpu } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
@@ -658,28 +658,18 @@ IMPORTANT:
   };
 
   return (
-    <Card className="h-full bg-card/50 backdrop-blur-sm border-border/50 flex flex-col overflow-hidden">
-      {/* Header */}
-      <div className="relative border-b border-border/50 glass-morphism-light p-4">
+    <Card className="h-full bg-[#fbf9f5] text-[#1a1814] border border-[#e4ddd2] shadow-none rounded-none flex flex-col overflow-hidden font-sans">
+      <div className="border-b border-[#e4ddd2] px-3 py-2">
         <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary to-accent rounded-xl blur-lg opacity-50 animate-pulse" />
-              <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-glow">
-                <Sparkles className="w-5 h-5 text-primary-foreground" />
-              </div>
-            </div>
-            <div>
-              <h3 className="text-sm font-bold text-foreground">AI Assistant</h3>
-              <p className="text-xs text-muted-foreground">
-                Powered by{" "}
-                {selectedModel === "openai"
-                  ? "GPT-6.1"
-                  : selectedModel === "claude"
-                    ? "Claude 3.5 Sonnet"
-                    : "Gemini 2.5 Flash"}
-              </p>
-            </div>
+          <div className="min-w-0">
+            <h3 className="text-sm font-['Newsreader',serif] text-[#1a1814]">Chat</h3>
+            <p className="text-xs text-[#6b645b] truncate">
+              {selectedModel === "openai"
+                ? "GPT-6.1"
+                : selectedModel === "claude"
+                  ? "Claude 3.5 Sonnet"
+                  : "Gemini 2.5 Flash"}
+            </p>
           </div>
           <Select
             value={selectedModel}
@@ -689,7 +679,7 @@ IMPORTANT:
               }
             }}
           >
-            <SelectTrigger className="w-[150px] h-9 text-xs">
+            <SelectTrigger className="w-[140px] h-8 text-xs border-[#e4ddd2] bg-[#fbf9f5] text-[#1a1814] shadow-none">
               <SelectValue>
                 <div className="flex items-center gap-2">
                   {selectedModel === "openai" ? (
@@ -711,7 +701,7 @@ IMPORTANT:
                 </div>
               </SelectValue>
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-[#fbf9f5] text-[#1a1814] border-[#e4ddd2]">
               <SelectItem value="openai">
                 <div className="flex items-center gap-2">
                   <Cpu className="w-4 h-4" />
@@ -735,41 +725,25 @@ IMPORTANT:
         </div>
       </div>
 
-      {/* Messages Area */}
-      <ScrollArea className="flex-1 p-4 scrollbar-thin" ref={scrollRef}>
-        <div className="space-y-4">
-          {/* Empty State */}
+      <ScrollArea className="flex-1 px-3 py-3" ref={scrollRef}>
+        <div className="space-y-3">
           {messages.length === 0 && (
-            <div className="text-center py-12 animate-fade-in">
-              <div className="relative inline-block mb-6">
-                <div className="absolute inset-0 bg-primary/20 rounded-full blur-2xl" />
-                <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center mx-auto border-2 border-primary/30">
-                  <Wand2 className="w-10 h-10 text-primary animate-float" />
-                </div>
-              </div>
-              
-              <h4 className="text-lg font-bold text-foreground mb-2">
-                Let's Build Something Amazing
+            <div className="py-6">
+              <h4 className="font-['Newsreader',serif] text-lg text-[#1a1814] mb-1">
+                What should we build?
               </h4>
-              <p className="text-sm text-muted-foreground mb-6 max-w-xs mx-auto">
-                Describe what you want to create and I'll generate the code for you instantly.
-                <br />
-                <span className="text-xs opacity-75">(Supports English & Swahili / Inasaidia Kiingereza na Kiswahili)</span>
+              <p className="text-sm text-[#6b645b] mb-4">
+                Describe the page. English and Swahili both work.
               </p>
 
-              {/* Suggestions */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground mb-3">
-                  <Lightbulb className="w-3 h-3" />
-                  <span>Try these examples:</span>
-                </div>
+              <div className="space-y-1">
+                <p className="text-xs text-[#6b645b] mb-2">Examples</p>
                 {suggestions.map((suggestion, idx) => (
                   <button
                     key={idx}
                     onClick={() => handleSuggestionClick(suggestion)}
-                    className="block w-full text-left text-xs px-4 py-2.5 rounded-lg bg-muted/50 hover:bg-primary/10 border border-border/50 hover:border-primary/50 text-muted-foreground hover:text-foreground transition-all duration-200 hover:translate-x-1"
+                    className="block w-full text-left text-xs px-2 py-1.5 text-[#1a1814] border border-transparent hover:border-[#e4ddd2] hover:bg-[#f4f0e8]"
                   >
-                    <span className="inline-block mr-2">→</span>
                     {suggestion}
                   </button>
                 ))}
@@ -777,64 +751,38 @@ IMPORTANT:
             </div>
           )}
 
-          {/* Messages */}
           {messages.map((msg, idx) => (
             <div
               key={idx}
               className={cn(
-                "flex animate-fade-in",
+                "flex",
                 msg.role === "user" ? "justify-end" : "justify-start"
               )}
-              style={{ animationDelay: `${idx * 50}ms` }}
             >
               <div
                 className={cn(
-                  "max-w-[85%] rounded-2xl p-4 shadow-lg transition-all duration-300 hover:scale-[1.02]",
+                  "max-w-[85%] px-3 py-2 text-sm leading-relaxed",
                   msg.role === "user"
-                    ? "bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-primary/20"
-                    : "bg-muted/80 backdrop-blur-sm text-foreground border border-border/50"
+                    ? "bg-[#146c43] text-[#fbf9f5]"
+                    : "bg-[#f4f0e8] text-[#1a1814] border border-[#e4ddd2]"
                 )}
               >
-                {/* Avatar for assistant */}
-                {msg.role === "assistant" && (
-                  <div className="flex items-start gap-3">
-                    <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <Sparkles className="w-3 h-3 text-primary" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
-                    </div>
-                  </div>
-                )}
-                {msg.role === "user" && (
-                  <p className="text-sm leading-relaxed whitespace-pre-wrap font-medium">{msg.content}</p>
-                )}
+                <p className="whitespace-pre-wrap">{msg.content}</p>
               </div>
             </div>
           ))}
 
-          {/* Loading State */}
           {isLoading && (
-            <div className="flex justify-start animate-fade-in">
-              <div className="bg-muted/80 backdrop-blur-sm border border-border/50 rounded-2xl p-4 shadow-lg">
-                <div className="flex items-center gap-3">
-                  <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                    <Sparkles className="w-3 h-3 text-primary animate-pulse" />
-                  </div>
-                  <div className="flex gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-primary/60 animate-bounce" style={{ animationDelay: "0ms" }} />
-                    <span className="w-2 h-2 rounded-full bg-primary/60 animate-bounce" style={{ animationDelay: "150ms" }} />
-                    <span className="w-2 h-2 rounded-full bg-primary/60 animate-bounce" style={{ animationDelay: "300ms" }} />
-                  </div>
-                </div>
+            <div className="flex justify-start">
+              <div className="px-3 py-2 text-xs text-[#6b645b] border border-[#e4ddd2] bg-[#f4f0e8]">
+                Working
               </div>
             </div>
           )}
         </div>
       </ScrollArea>
 
-      {/* Input Area */}
-      <div className="border-t border-border/50 p-4 glass-morphism-light">
+      <div className="border-t border-[#e4ddd2] p-3">
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -842,28 +790,18 @@ IMPORTANT:
           }}
           className="flex gap-2"
         >
-          <div className="flex-1 relative group">
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-              placeholder="Describe what you want to build... (English or Swahili)"
+            placeholder="Describe what you want to build... (English or Swahili)"
             disabled={isLoading}
-              className="flex-1 bg-background/50 border-border/50 focus:border-primary/50 pr-10 h-11 rounded-xl transition-all focus:shadow-glow"
-            />
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground opacity-0 group-focus-within:opacity-100 transition-opacity">
-              <kbd className="px-1.5 py-0.5 rounded bg-muted text-[10px] font-mono">↵</kbd>
-            </div>
-          </div>
-          <Button 
-            type="submit" 
-            disabled={isLoading || !input.trim()} 
+            className="bg-[#fbf9f5] border-[#e4ddd2] text-[#1a1814] shadow-none h-9 rounded-md placeholder:text-[#6b645b] focus-visible:ring-[#146c43] focus-visible:ring-offset-0"
+          />
+          <Button
+            type="submit"
+            disabled={isLoading || !input.trim()}
             size="icon"
-            className={cn(
-              "h-11 w-11 rounded-xl transition-all duration-200",
-              !isLoading && input.trim() 
-                ? "bg-gradient-to-br from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-glow hover:shadow-glow-lg hover:scale-105 active:scale-95" 
-                : ""
-            )}
+            className="h-9 w-9 rounded-md bg-[#146c43] text-[#fbf9f5] hover:bg-[#0e4d30] shadow-none"
           >
             {isLoading ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -872,7 +810,7 @@ IMPORTANT:
             )}
           </Button>
         </form>
-        <p className="text-[10px] text-muted-foreground mt-2 text-center">
+        <p className="text-[10px] text-[#6b645b] mt-2">
           AI can make mistakes. Always review generated code.
         </p>
       </div>
