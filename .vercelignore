@@ -1,0 +1,6 @@
+functions
+.firebase
+.env
+service-account.json
+*.md
+supabase
