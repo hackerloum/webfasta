@@ -1,214 +1,65 @@
-# 🚀 START HERE - Complete Setup Guide
+# Webfasta — Firebase setup
 
-## ✅ Your Supabase Credentials
+The app uses Firebase Authentication, Cloud Firestore, and one Cloud Function for ZenoPay.
 
-- **URL:** `https://hirgguemwflwruqsvenv.supabase.co`
-- **Anon Key:** `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhpcmdndWVtd2Zsd3J1cXN2ZW52Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxNjU0NjIsImV4cCI6MjA3ODc0MTQ2Mn0.tTBUWSKXdW2WNbKUAWQXVV4HO-6fHqH4lLPCWB3jCb0`
-- **Service Role Key:** Get this from your Supabase Dashboard → Settings → API (keep it secret!)
+## 1. Create a Firebase project
 
----
+Use an existing project, or create one:
 
-## 📝 Step 1: Create .env File (REQUIRED)
+```bash
+npx -y firebase-tools@latest login
+npx -y firebase-tools@latest projects:create <project-id> --display-name "Webfasta"
+npx -y firebase-tools@latest use <project-id>
+npx -y firebase-tools@latest apps:create web webfasta
+```
 
-**You must create this file manually!**
+Enable Email/Password sign-in, then deploy auth config from `firebase.json`:
 
-1. **In your project root**, create a new file named `.env`
-2. **Copy and paste this exact content:**
+```bash
+npx -y firebase-tools@latest deploy --only auth
+```
+
+## 2. Web app env
+
+Copy `.env.example` to `.env` and fill in the web config from:
+
+```bash
+npx -y firebase-tools@latest apps:sdkconfig WEB <APP_ID> --project <project-id>
+```
 
 ```env
-VITE_SUPABASE_URL=https://hirgguemwflwruqsvenv.supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhpcmdndWVtd2Zsd3J1cXN2ZW52Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxNjU0NjIsImV4cCI6MjA3ODc0MTQ2Mn0.tTBUWSKXdW2WNbKUAWQXVV4HO-6fHqH4lLPCWB3jCb0
+VITE_FIREBASE_API_KEY=
+VITE_FIREBASE_AUTH_DOMAIN=
+VITE_FIREBASE_PROJECT_ID=
+VITE_FIREBASE_STORAGE_BUCKET=
+VITE_FIREBASE_MESSAGING_SENDER_ID=
+VITE_FIREBASE_APP_ID=
 ```
 
-3. **Save the file**
+## 3. Firestore
 
-**⚠️ Important:** The `.env` file is in `.gitignore` - it won't be committed to git (this is good for security).
-
----
-
-## 🗄️ Step 2: Create Database (REQUIRED)
-
-1. **Open Supabase Dashboard:**
-   - Go to: https://hirgguemwflwruqsvenv.supabase.co
-   - Click **SQL Editor** (left sidebar)
-
-2. **Copy and paste this SQL:**
-
-```sql
--- Create user_profiles table
-CREATE TABLE IF NOT EXISTS user_profiles (
-  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  email TEXT,
-  full_name TEXT,
-  subscription_plan TEXT DEFAULT 'free' CHECK (subscription_plan IN ('free', 'pro', 'enterprise', 'starter', 'business')),
-  preferences JSONB DEFAULT '{}'::jsonb,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
-);
-
--- Enable Row Level Security
-ALTER TABLE user_profiles ENABLE ROW LEVEL SECURITY;
-
--- Create policies
-CREATE POLICY "Users can view own profile"
-  ON user_profiles FOR SELECT
-  USING (auth.uid() = id);
-
-CREATE POLICY "Users can update own profile"
-  ON user_profiles FOR UPDATE
-  USING (auth.uid() = id);
-
-CREATE POLICY "Users can insert own profile"
-  ON user_profiles FOR INSERT
-  WITH CHECK (auth.uid() = id);
-
--- Create indexes
-CREATE INDEX IF NOT EXISTS user_profiles_email_idx ON user_profiles(email);
-CREATE INDEX IF NOT EXISTS user_profiles_subscription_plan_idx ON user_profiles(subscription_plan);
+```bash
+npx -y firebase-tools@latest firestore:databases:create "(default)" --edition="enterprise" --location="eur3"
+npx -y firebase-tools@latest deploy --only firestore
 ```
 
-3. **Click "Run"** (or press Ctrl+Enter)
-4. **Wait for "Success" message**
+Collections:
 
----
+- `users/{uid}` — email, fullName, subscriptionPlan, preferences, createdAt, updatedAt
+- `payments/{orderId}` — written only by the payment function
 
-## 🚫 Step 3: Disable Trigger (FIXES 500 ERROR)
+## 4. ZenoPay function
 
-**Still in SQL Editor, run this:**
-
-```sql
--- Disable the trigger that causes 500 errors
-DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+```bash
+npx -y firebase-tools@latest functions:secrets:set ZENOPAY_API_KEY
+npx -y firebase-tools@latest deploy --only functions
 ```
 
-**Click "Run"**
+## 5. Run the app
 
-**Why?** The trigger was causing signup to fail. The client code now creates profiles automatically.
+```bash
+npm install
+npm run dev
+```
 
----
-
-## ⚙️ Step 4: Configure Auth (IMPORTANT)
-
-1. **In Supabase Dashboard:**
-   - Go to **Authentication** → **Settings**
-
-2. **Disable Email Confirmation:**
-   - Find **Email Auth** section
-   - **Uncheck** "Enable email confirmations"
-   - Click **Save**
-
-3. **Configure Redirect URLs:**
-   - Go to **Authentication** → **URL Configuration**
-   - **Site URL:** `http://localhost:8080`
-   - **Redirect URLs:** Add these:
-     - `http://localhost:8080/**`
-     - `http://localhost:5173/**`
-   - Click **Save**
-
----
-
-## 🚀 Step 5: Start Your App
-
-1. **Make sure `.env` file exists** (from Step 1)
-
-2. **Restart dev server:**
-   ```bash
-   # Stop current server (Ctrl+C if running)
-   npm run dev
-   ```
-
-3. **Clear browser cache:**
-   - Press **F12** to open DevTools
-   - Go to **Application** tab
-   - Click **Local Storage** → Clear all
-   - Refresh page (F5)
-
----
-
-## ✅ Step 6: Test Signup
-
-1. **Click "Get Started" or "Sign Up"** in the app
-2. **Fill in the form:**
-   - Email: `test@example.com`
-   - Password: `test1234` (min 6 characters)
-   - Full Name: `Test User`
-3. **Click "Create Account"**
-4. **Should work!** ✅
-
----
-
-## 🔍 Verify It Works
-
-### **Check 1: User Created**
-- Supabase Dashboard → **Authentication** → **Users**
-- Should see your test user
-
-### **Check 2: Profile Created**
-- Supabase Dashboard → **Table Editor** → `user_profiles`
-- Should see profile with `subscription_plan: 'free'`
-
-### **Check 3: Can Access Builder**
-- After signup, you should be redirected to Pricing
-- Click any plan
-- Should redirect to Builder
-- Builder should load without errors
-
----
-
-## 🐛 If Signup Still Fails
-
-### **Check 1: .env File**
-- Make sure `.env` exists in project root
-- Verify URL is exactly: `https://hirgguemwflwruqsvenv.supabase.co`
-- Verify key matches exactly
-- **Restart dev server** after creating/editing `.env`
-
-### **Check 2: Database**
-- Make sure Step 2 SQL ran successfully
-- Check **Table Editor** → `user_profiles` exists
-
-### **Check 3: Trigger**
-- Make sure Step 3 SQL ran (trigger disabled)
-- Check **Database** → **Triggers** → should NOT see `on_auth_user_created`
-
-### **Check 4: Auth Settings**
-- Email confirmation should be **disabled**
-- Redirect URLs should be configured
-
-### **Check 5: Browser Console**
-- Open DevTools (F12)
-- Go to **Console** tab
-- Look for any error messages
-- Share the error if you see one
-
----
-
-## 📋 Quick Checklist
-
-- [ ] `.env` file created with correct values
-- [ ] Database table created (Step 2)
-- [ ] Trigger disabled (Step 3)
-- [ ] Email confirmation disabled (Step 4)
-- [ ] Redirect URLs configured (Step 4)
-- [ ] Dev server restarted
-- [ ] Browser cache cleared
-- [ ] Test signup works
-- [ ] Profile created
-- [ ] Can access Builder
-
----
-
-## 🎉 Success!
-
-Once all steps are complete:
-- ✅ Signup works without 500 errors
-- ✅ Profiles auto-created
-- ✅ Plans can be selected
-- ✅ Builder is accessible
-- ✅ AI generation works
-- ✅ Everything is configured!
-
----
-
-**Need help?** Check the error message in browser console (F12) and share it with me!
-
+The dev server is `http://localhost:8080`. Add `localhost` to Authentication → Settings → Authorized domains.

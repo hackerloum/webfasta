@@ -54,7 +54,7 @@ Your AI Website Studio now has full payment integration with ZenoPay for mobile 
 4. Add the following environment variable:
 
 ```
-ZENOPAY_API_KEY=000GTt5huRVorBPtnjmQ2bqo-UTVCElL9HCZgdit8IiFyJs95p-ZecCspeeqY4QdDymNby1BkmubByIVL9WTew
+ZENOPAY_API_KEY=<set with: npx -y firebase-tools@latest functions:secrets:set ZENOPAY_API_KEY>
 ```
 
 **Note**: The API key is currently hardcoded as a fallback in the Edge Function, but it's recommended to set it as an environment variable for production.

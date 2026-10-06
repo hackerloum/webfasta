@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import type { SubscriptionPlan } from "@/lib/users";
 import { useToast } from "@/components/ui/use-toast";
 import AuthDialog from "@/components/AuthDialog";
 import PaymentDialog from "@/components/PaymentDialog";
@@ -94,7 +94,7 @@ const plans = [
 ];
 
 const Pricing = () => {
-  const { user, userProfile, loading: authLoading } = useAuth();
+  const { user, userProfile, loading: authLoading, updatePlan, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
@@ -146,7 +146,7 @@ const Pricing = () => {
     }
 
     // Check if user is already on this plan
-    if (userProfile?.subscription_plan === plan.planId) {
+    if (userProfile?.subscriptionPlan === plan.planId) {
       toast({
         title: "Already on this plan",
         description: `You're already subscribed to the ${planName} plan.`,
@@ -158,12 +158,7 @@ const Pricing = () => {
     // For free/starter plans, update directly without payment
     if (plan.planId === "starter" || plan.price === "3,000") {
       try {
-        const { error } = await supabase
-          .from("user_profiles")
-          .update({ subscription_plan: plan.planId })
-          .eq("id", user.id);
-
-        if (error) throw error;
+        await updatePlan(plan.planId as SubscriptionPlan);
 
         toast({
           title: "Plan updated!",
@@ -172,10 +167,10 @@ const Pricing = () => {
 
         // Redirect to dashboard
         navigate("/dashboard");
-      } catch (error: any) {
+      } catch (error) {
         toast({
           title: "Error",
-          description: error.message || "Failed to update plan",
+          description: error instanceof Error ? error.message : "Failed to update plan",
           variant: "destructive",
         });
       }
@@ -193,24 +188,15 @@ const Pricing = () => {
 
   const handlePaymentSuccess = async () => {
     // Refresh user profile to get updated subscription plan
-    if (user) {
-      const { data } = await supabase
-        .from("user_profiles")
-        .select("subscription_plan")
-        .eq("id", user.id)
-        .single();
-
-      if (data) {
-        toast({
-          title: "Payment Successful!",
-          description: `Your ${selectedPlanForPayment?.name} plan is now active.`,
-        });
-        // Redirect to dashboard after a short delay
-        setTimeout(() => {
-          navigate("/dashboard");
-        }, 2000);
-      }
-    }
+    if (!user) return;
+    await refreshProfile();
+    toast({
+      title: "Payment Successful!",
+      description: `Your ${selectedPlanForPayment?.name} plan is now active.`,
+    });
+    setTimeout(() => {
+      navigate("/dashboard");
+    }, 2000);
   };
 
   const faqs = [
@@ -350,7 +336,7 @@ const Pricing = () => {
 
                   <Button 
                     onClick={() => handlePlanSelect(plan.name)}
-                    disabled={user && userProfile?.subscription_plan === plan.planId}
+                    disabled={user && userProfile?.subscriptionPlan === plan.planId}
                     className={`w-full ${
                       plan.popular 
                         ? "bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-lg font-bold shadow-lg hover:shadow-glow" 
@@ -358,8 +344,8 @@ const Pricing = () => {
                     } transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed`}
                     variant={plan.popular ? "default" : "outline"}
                   >
-                    {user && userProfile?.subscription_plan === plan.planId ? "Current Plan" : plan.cta}
-                    {(!user || userProfile?.subscription_plan !== plan.planId) && (
+                    {user && userProfile?.subscriptionPlan === plan.planId ? "Current Plan" : plan.cta}
+                    {(!user || userProfile?.subscriptionPlan !== plan.planId) && (
                       <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                     )}
                   </Button>
@@ -544,9 +530,9 @@ const Pricing = () => {
           planName={selectedPlanForPayment.name}
           amount={selectedPlanForPayment.amount}
           planId={selectedPlanForPayment.planId}
-          userId={user?.id}
-          userEmail={user?.email}
-          userName={userProfile?.full_name || undefined}
+          userId={user?.uid}
+          userEmail={user?.email || undefined}
+          userName={userProfile?.fullName || undefined}
           onSuccess={handlePaymentSuccess}
         />
       )}

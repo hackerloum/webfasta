@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -52,32 +51,8 @@ const Dashboard = () => {
         return;
       }
 
-      // Double-check with Supabase directly to avoid race conditions
-      // This handles the case where the page refreshes and auth context hasn't loaded yet
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (!isMounted) return;
-
-        if (session?.user) {
-          // Session exists, user will be set by AuthContext soon
-          // Wait a bit for AuthContext to catch up
-          setTimeout(() => {
-            if (isMounted) {
-              setAuthChecked(true);
-            }
-          }, 100);
-        } else {
-          // No session, redirect to pricing
-          setAuthChecked(true);
-          navigate("/pricing", { replace: true });
-        }
-      } catch (error) {
-        console.error("Error checking auth:", error);
-        if (isMounted) {
-          setAuthChecked(true);
-        }
-      }
+      setAuthChecked(true);
+      navigate("/pricing", { replace: true });
     };
 
     checkAuth();
@@ -187,7 +162,7 @@ const Dashboard = () => {
     },
     {
       label: "Account Created",
-      value: new Date(userProfile?.created_at || Date.now()).toLocaleDateString(),
+      value: new Date(userProfile?.createdAt || Date.now()).toLocaleDateString(),
       icon: <Calendar className="w-5 h-5" />,
       color: "text-green-500"
     }
@@ -276,7 +251,7 @@ const Dashboard = () => {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-foreground truncate">
-                  {userProfile?.full_name || user.email?.split("@")[0] || "User"}
+                  {userProfile?.fullName || user.email?.split("@")[0] || "User"}
                 </p>
                 <p className="text-xs text-muted-foreground truncate">{user.email}</p>
               </div>
@@ -326,7 +301,7 @@ const Dashboard = () => {
               </Button>
               <div>
                 <h2 className="text-2xl font-bold text-foreground">Dashboard</h2>
-                <p className="text-sm text-muted-foreground">Welcome back, {userProfile?.full_name || user.email?.split("@")[0] || "User"}!</p>
+                <p className="text-sm text-muted-foreground">Welcome back, {userProfile?.fullName || user.email?.split("@")[0] || "User"}!</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -400,7 +375,7 @@ const Dashboard = () => {
                   <div className="flex-1">
                     <p className="text-sm text-muted-foreground mb-1">Full Name</p>
                     <p className="text-base font-semibold text-foreground">
-                      {userProfile?.full_name || "Not set"}
+                      {userProfile?.fullName || "Not set"}
                     </p>
                   </div>
                 </div>
@@ -422,8 +397,8 @@ const Dashboard = () => {
                   <div className="flex-1">
                     <p className="text-sm text-muted-foreground mb-1">Member Since</p>
                     <p className="text-base font-semibold text-foreground">
-                      {userProfile?.created_at
-                        ? new Date(userProfile.created_at).toLocaleDateString("en-US", {
+                      {userProfile?.createdAt
+                        ? new Date(userProfile.createdAt).toLocaleDateString("en-US", {
                             year: "numeric",
                             month: "long",
                             day: "numeric"

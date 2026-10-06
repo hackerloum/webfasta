@@ -1,0 +1,99 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: Firebase Auth uid
+    // Fields:
+    //   - email: string (required, immutable, must match auth token email)
+    //   - fullName: string or null (optional, max 120)
+    //   - subscriptionPlan: string (required; free | starter | pro | business | enterprise)
+    //   - preferences: map (required)
+    //   - createdAt: timestamp (required, immutable)
+    //   - updatedAt: timestamp (required, must be request.time on write)
+    //
+    // Clients may create a profile only on the free plan.
+    // Clients may change a plan only to free or starter.
+    // Paid plans are written by the zenopayPayment Cloud Function (Admin SDK).
+    //
+    // Collection: payments
+    // Document ID: order id
+    // Fields:
+    //   - userId: string (required, owner)
+    //   - orderId: string (required)
+    //   - transactionId: string or null
+    //   - planId: string (required)
+    //   - amount: number (required, > 0)
+    //   - currency: string (required, "TZS")
+    //   - buyerEmail: string (required)
+    //   - buyerName: string (required)
+    //   - buyerPhone: string (required)
+    //   - status: string (pending | completed | failed | cancelled)
+    //   - zenopayResponse: map
+    //   - errorMessage: string or null
+    //   - createdAt: timestamp
+    //   - updatedAt: timestamp
+    //
+    // Clients may read their own payments. Writes happen only in Cloud Functions.
+    //
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasOnly([
+          'email',
+          'fullName',
+          'subscriptionPlan',
+          'preferences',
+          'createdAt',
+          'updatedAt'
+        ])
+        && data.email is string
+        && data.email.size() > 3
+        && data.email.size() < 320
+        && (data.fullName == null || (data.fullName is string && data.fullName.size() <= 120))
+        && data.subscriptionPlan in ['free', 'starter', 'pro', 'business', 'enterprise']
+        && data.preferences is map
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+
+      allow create: if isOwner(userId)
+        && isValidUser(request.resource.data)
+        && request.resource.data.subscriptionPlan == 'free'
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time;
+
+      allow update: if isOwner(userId)
+        && isValidUser(request.resource.data)
+        && request.resource.data.email == resource.data.email
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.updatedAt == request.time
+        && (
+          request.resource.data.subscriptionPlan == resource.data.subscriptionPlan
+          || request.resource.data.subscriptionPlan in ['free', 'starter']
+        );
+
+      allow delete: if false;
+    }
+
+    match /payments/{paymentId} {
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create, update, delete: if false;
+    }
+  }
+}

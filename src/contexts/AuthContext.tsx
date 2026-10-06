@@ -1,184 +1,139 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import { User, Session } from "@supabase/supabase-js";
-import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import {
+  createUserWithEmailAndPassword,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signOut as firebaseSignOut,
+  updateProfile,
+  type User,
+} from "firebase/auth";
+import { auth } from "@/lib/firebase";
+import {
+  createUserProfile,
+  getUserProfile,
+  updateSubscriptionPlan,
+  type SubscriptionPlan,
+  type UserProfile,
+} from "@/lib/users";
 
 interface AuthContextType {
   user: User | null;
-  session: Session | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<{ error: any }>;
-  signUp: (email: string, password: string, fullName?: string) => Promise<{ error: any }>;
+  signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
+  signUp: (
+    email: string,
+    password: string,
+    fullName?: string
+  ) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   userProfile: UserProfile | null;
   subscriptionPlan: string | null;
-}
-
-interface UserProfile {
-  id: string;
-  email: string;
-  full_name: string | null;
-  subscription_plan: string | null;
-  created_at: string;
-  preferences: any;
+  refreshProfile: () => Promise<void>;
+  updatePlan: (plan: SubscriptionPlan) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [subscriptionPlan, setSubscriptionPlan] = useState<string | null>(null);
 
-  useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchUserProfile(session.user.id);
-      }
-      setLoading(false);
-    });
-
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchUserProfile(session.user.id);
-      } else {
-        setUserProfile(null);
-        setSubscriptionPlan(null);
-      }
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
+  const applyProfile = useCallback((profile: UserProfile | null) => {
+    setUserProfile(profile);
+    setSubscriptionPlan(profile?.subscriptionPlan ?? null);
   }, []);
 
-  const fetchUserProfile = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from("user_profiles")
-        .select("*")
-        .eq("id", userId)
-        .single();
-
-      if (error && error.code !== "PGRST116") {
-        // PGRST116 = no rows returned, which is fine for new users
-        console.error("Error fetching user profile:", error);
-      }
-
-      if (data) {
-        setUserProfile(data);
-        setSubscriptionPlan(data.subscription_plan || "free");
-      } else {
-        // Create profile if it doesn't exist
-        const { data: newProfile } = await supabase
-          .from("user_profiles")
-          .insert({
-            id: userId,
-            email: user?.email || "",
-            subscription_plan: "free",
-          })
-          .select()
-          .single();
-
-        if (newProfile) {
-          setUserProfile(newProfile);
-          setSubscriptionPlan("free");
-        }
-      }
-    } catch (error) {
-      console.error("Error in fetchUserProfile:", error);
+  const loadProfile = useCallback(async (firebaseUser: User) => {
+    const existing = await getUserProfile(firebaseUser.uid);
+    if (existing) {
+      applyProfile(existing);
+      return;
     }
+
+    const created = await createUserProfile({
+      id: firebaseUser.uid,
+      email: firebaseUser.email ?? "",
+      fullName: firebaseUser.displayName,
+    });
+    applyProfile(created);
+  }, [applyProfile]);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      setUser(firebaseUser);
+      if (firebaseUser) {
+        try {
+          await loadProfile(firebaseUser);
+        } catch (error) {
+          console.error("Error loading user profile:", error);
+          applyProfile(null);
+        }
+      } else {
+        applyProfile(null);
+      }
+      setLoading(false);
+    });
+
+    return unsubscribe;
+  }, [applyProfile, loadProfile]);
+
+  const refreshProfile = async () => {
+    if (!user) return;
+    const profile = await getUserProfile(user.uid);
+    applyProfile(profile);
+  };
+
+  const updatePlan = async (plan: SubscriptionPlan) => {
+    if (!user) throw new Error("You need to sign in first");
+    await updateSubscriptionPlan(user.uid, plan);
+    await refreshProfile();
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    return { error };
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      return { error: null };
+    } catch (error) {
+      return { error: error as Error };
+    }
   };
 
   const signUp = async (email: string, password: string, fullName?: string) => {
     try {
-      const { data, error: authError } = await supabase.auth.signUp({
+      const credential = await createUserWithEmailAndPassword(auth, email, password);
+      if (fullName) {
+        await updateProfile(credential.user, { displayName: fullName });
+      }
+      const profile = await createUserProfile({
+        id: credential.user.uid,
         email,
-        password,
-        options: {
-          data: {
-            full_name: fullName,
-          },
-          emailRedirectTo: `${window.location.origin}/pricing`,
-        },
+        fullName: fullName ?? null,
       });
-
-      if (authError) {
-        console.error("Signup error:", authError);
-        return { error: authError };
-      }
-
-      // Create user profile immediately after signup
-      // The trigger is disabled, so we handle it in code
-      if (data.user) {
-        // Small delay to ensure user is fully created
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        try {
-          const { error: profileError } = await supabase
-            .from("user_profiles")
-            .insert({
-              id: data.user.id,
-              email: data.user.email || email,
-              full_name: fullName || null,
-              subscription_plan: "free",
-            });
-
-          if (profileError) {
-            // If profile already exists, that's fine
-            if (profileError.code !== '23505') { // Not a duplicate key error
-              console.warn("Profile creation error:", profileError);
-            }
-          } else {
-            console.log("User profile created successfully");
-            // Refresh profile data
-            await fetchUserProfile(data.user.id);
-          }
-        } catch (profileErr: any) {
-          console.warn("Profile creation exception:", profileErr);
-          // Don't fail signup - profile can be created later
-        }
-      }
-
+      applyProfile(profile);
       return { error: null };
-    } catch (error: any) {
-      console.error("Signup exception:", error);
-      return { error: error };
+    } catch (error) {
+      console.error("Signup error:", error);
+      return { error: error as Error };
     }
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    setUserProfile(null);
-    setSubscriptionPlan(null);
+    await firebaseSignOut(auth);
+    applyProfile(null);
   };
 
   const value = {
     user,
-    session,
     loading,
     signIn,
     signUp,
     signOut,
     userProfile,
     subscriptionPlan,
+    refreshProfile,
+    updatePlan,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -187,23 +142,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    // During hot reload in development, context might be temporarily undefined
-    // Provide a fallback to prevent crashes, but log a warning
     if (import.meta.env.DEV) {
       console.warn("useAuth called outside AuthProvider - this may be a hot reload issue");
       return {
         user: null,
-        session: null,
         loading: true,
         signIn: async () => ({ error: new Error("Auth not available") }),
         signUp: async () => ({ error: new Error("Auth not available") }),
         signOut: async () => {},
         userProfile: null,
         subscriptionPlan: null,
+        refreshProfile: async () => {},
+        updatePlan: async () => {},
       };
     }
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
-

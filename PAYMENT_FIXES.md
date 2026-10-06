@@ -83,7 +83,7 @@ Go to **Supabase Dashboard** → **Edge Functions** → **zenopay-payment** → 
 Add these variables:
 
 ```
-ZENOPAY_API_KEY=000GTt5huRVorBPtnjmQ2bqo-UTVCElL9HCZgdit8IiFyJs95p-ZecCspeeqY4QdDymNby1BkmubByIVL9WTew
+ZENOPAY_API_KEY=<set with: npx -y firebase-tools@latest functions:secrets:set ZENOPAY_API_KEY>
 SUPABASE_URL=https://hirgguemwflwruqsvenv.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here
 ```
