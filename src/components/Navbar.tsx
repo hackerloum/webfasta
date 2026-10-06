@@ -70,9 +70,8 @@ const Navbar = () => {
               </div>
             </div>
             <div className="hidden sm:block">
-              <div className="text-xl font-bold">
-                <span className="text-gradient">AI</span>
-                <span className="text-foreground"> Builder</span>
+              <div className="text-xl font-semibold tracking-tight text-foreground">
+                Webfasta
               </div>
             </div>
           </Link>

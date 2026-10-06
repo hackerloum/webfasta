@@ -21,16 +21,14 @@ const Footer = () => {
                 </div>
               </div>
               <div>
-                <div className="text-2xl font-black">
-                  <span className="text-gradient">AI</span>
-                  <span className="text-foreground"> Builder</span>
+                <div className="text-xl font-semibold tracking-tight text-foreground">
+                  Webfasta
                 </div>
             </div>
             </Link>
             
             <p className="text-base text-muted-foreground max-w-md mb-6 leading-relaxed">
-              Build beautiful websites with the power of AI. From landing pages to full applications,
-              create production-ready code in minutes—no coding experience required.
+              Websites for shops and services in Tanzania. Describe the business, edit the page, pay with mobile money.
             </p>
             
             {/* Newsletter */}
@@ -170,7 +168,7 @@ const Footer = () => {
         {/* Bottom Section */}
         <div className="border-t border-border/50 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-sm text-muted-foreground text-center md:text-left">
-            © {new Date().getFullYear()} AI Website Builder. All rights reserved.
+            © {new Date().getFullYear()} Webfasta. All rights reserved.
           </p>
           
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
